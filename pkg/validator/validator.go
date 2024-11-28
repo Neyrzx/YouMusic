@@ -1,0 +1,69 @@
+package validator
+
+import (
+	"errors"
+	"log"
+	"net/http"
+
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
+	"github.com/labstack/echo/v4"
+)
+
+type Validator struct {
+	validator  *validator.Validate
+	translator ut.Translator
+}
+
+func NewValidator() *Validator {
+	tagsDescribes := map[string]string{
+		"required": "field is required",
+	}
+
+	uni := ut.New(en.New(), en.New())
+
+	trans, _ := uni.GetTranslator("en")
+	validate := validator.New()
+
+	if err := en_translations.RegisterDefaultTranslations(validate, trans); err != nil {
+		log.Printf("failed to en_translations.RegisterDefaultTranslations(): %s", err.Error())
+	}
+
+	for tag, descibe := range tagsDescribes {
+		err := validate.RegisterTranslation(tag, trans, func(ut ut.Translator) error {
+			return ut.Add(tag, descibe, true)
+		}, func(ut ut.Translator, fe validator.FieldError) string {
+			t, _ := ut.T(tag, fe.Field())
+			return t
+		})
+
+		if err != nil {
+			log.Printf("failed to validate.RegisterTranslation(%s, ...): %s", tag, err.Error())
+		}
+	}
+
+	return &Validator{
+		validator:  validate,
+		translator: trans,
+	}
+}
+
+func (v *Validator) Validate(i any) (err error) {
+	if err = v.validator.Struct(i); err != nil {
+		var vErr validator.ValidationErrors
+		var ivErr *validator.InvalidValidationError
+
+		switch {
+		case errors.As(err, &vErr):
+			return echo.NewHTTPError(http.StatusUnprocessableEntity, vErr.Translate(v.translator))
+		case errors.As(err, &ivErr):
+			return err
+		default:
+			return err
+		}
+	}
+
+	return nil
+}

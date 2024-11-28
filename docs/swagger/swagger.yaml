@@ -1,0 +1,15 @@
+basePath: /api/v1
+host: localhost:9090
+info:
+  contact:
+    email: khorev.valeriy@yandex.ru
+    name: API Support
+  description: Это проект был разработан в рамках тестового задания от EffectiveMobile
+  license:
+    name: MIT
+    url: https://github.com/Neyrzx/YouMusic?tab=MIT-1-ov-file
+  termsOfService: http://swagger.io/terms/
+  title: YouMusic
+  version: 0.0.1
+paths: {}
+swagger: "2.0"

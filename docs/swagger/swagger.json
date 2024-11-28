@@ -1,0 +1,20 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Это проект был разработан в рамках тестового задания от EffectiveMobile",
+        "title": "YouMusic",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "email": "khorev.valeriy@yandex.ru"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/Neyrzx/YouMusic?tab=MIT-1-ov-file"
+        },
+        "version": "0.0.1"
+    },
+    "host": "localhost:9090",
+    "basePath": "/api/v1",
+    "paths": {}
+}

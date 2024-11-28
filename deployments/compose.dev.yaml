@@ -1,0 +1,48 @@
+name: youmusic-local
+
+services:
+  youmusic-database:
+    image: postgres:16-alpine
+    ports: 
+      - ${DB_PORT}:5432
+    environment:
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_DB=$DB_NAME
+      - POSTGRES_PASSWORD=$DB_PASSWORD
+    volumes:
+      - youmusic-database:/var/lib/postgresql/data
+    networks:
+      - private
+
+  pgadmin:
+    image: dpage/pgadmin4:8.9
+    depends_on:
+      - youmusic-database
+    configs:
+      - source: pgadmin
+        target: /pgadmin4/servers.json
+    ports:
+      - ${PGADMIN_PORT}:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    healthcheck:
+      test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
+      interval: 5s
+      timeout: 10s
+      start_period: 15s
+    networks:
+      - private
+
+volumes:
+  youmusic-database:
+  pgadmin:
+
+configs:
+  pgadmin:
+    file: ./configs/pgadmin.servers.json
+
+networks:
+  private:

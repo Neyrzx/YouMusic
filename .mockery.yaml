@@ -1,0 +1,25 @@
+issue-845-fix: True
+
+dir: mocks/{{ replaceAll .InterfaceDirRelative "internal" "internal_" }} 
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "mocks"
+filename: "mocks/{{.InterfaceName}}.go"
+
+with-expecter: True
+
+packages:
+    github.com/neyrzx/youmusic/internal/delivery/rest/v1:
+      config:
+      interfaces:
+        TracksService:
+
+    github.com/neyrzx/youmusic/internal/domain/services:
+      config:
+      interfaces:
+        TracksRepository:
+        TracksInfoGateway:
+
+    github.com/neyrzx/youmusic/internal/gateways:
+      config:
+      interfaces:
+        Client:
