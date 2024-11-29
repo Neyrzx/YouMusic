@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -12,6 +13,10 @@ import (
 )
 
 const queryTimeout = 120 * time.Second
+
+var (
+	ErrTrackAlreadyExists = errors.New("track is already exists")
+)
 
 type TracksRepository struct {
 	db *pgxpool.Pool
@@ -31,22 +36,34 @@ func (r *TracksRepository) Create(ctx context.Context, track entities.Track) (er
 	}
 	defer func() {
 		if err != nil {
-			err = tx.Rollback(ctx)
+			_ = tx.Rollback(ctx)
 		}
 	}()
 
-	artistdao := dao.ArtistDAO{Name: track.Artist}
-	artistID, err := r.CreateArtist(ctx, tx, artistdao)
+	trackExists, err := r.IsExistsTrack(ctx, tx, track)
 	if err != nil {
-		return fmt.Errorf("failed to CreateArtist(%s): %w", track.Artist, err)
+		return fmt.Errorf("failed to GetTrack(%s, %s): %w", track.Title, track.Artist, err)
+	}
+
+	if trackExists {
+		return ErrTrackAlreadyExists
 	}
 
 	trackDAO := dao.TrackDAO{
-		ArtistID:   artistID,
 		Title:      track.Title,
 		Link:       track.Link,
 		ReleasedAt: track.Released,
 	}
+	artistID, trackExists := r.IsExistsArtist(ctx, tx, track.Artist)
+	if trackExists {
+		trackDAO.ArtistID = artistID
+	} else {
+		trackDAO.ArtistID, err = r.CreateArtist(ctx, tx, dao.ArtistDAO{Name: track.Artist})
+		if err != nil {
+			return fmt.Errorf("failed to CreateArtist(%s): %w", track.Artist, err)
+		}
+	}
+
 	trackID, err := r.CreateTrack(ctx, tx, trackDAO)
 	if err != nil {
 		return fmt.Errorf("failed to CreateTrack(%v+): %w", trackDAO, err)
@@ -86,17 +103,11 @@ func (r *TracksRepository) CreateArtist(ctx context.Context, tx pgx.Tx, artist d
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
-	query := `INSERT INTO public.artists (name) VALUES ($1) RETURNING artist_id;`
+	query := `
+		INSERT INTO artists (name) VALUES ($1) RETURNING artist_id;`
 
-	rows, err := tx.Query(ctx, query, artist.Name)
-	if err != nil {
-		return 0, fmt.Errorf("failed to tx.Query: %w", err)
-	}
-
-	for rows.Next() {
-		if err = rows.Scan(&id); err != nil {
-			return 0, fmt.Errorf("failed to rows.Scan: %w", err)
-		}
+	if err = tx.QueryRow(ctx, query, artist.Name).Scan(&id); err != nil {
+		return 0, fmt.Errorf("failed to rows.Scan: %w", err)
 	}
 
 	return id, nil
@@ -106,17 +117,11 @@ func (r *TracksRepository) CreateTrack(ctx context.Context, tx pgx.Tx, track dao
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
-	query := `INSERT INTO public.tracks (title, artist_id, link, released_at) VALUES ($1, $2, $3, $4) RETURNING track_id;`
+	query := `
+		INSERT INTO tracks (title, artist_id, link, released_at) VALUES ($1, $2, $3, $4) RETURNING track_id;`
 
-	rows, err := tx.Query(ctx, query, track.Title, track.ArtistID, track.Link, track.ReleasedAt)
-	if err != nil {
-		return 0, fmt.Errorf("failed to tx.Query: %w", err)
-	}
-
-	for rows.Next() {
-		if err = rows.Scan(&id); err != nil {
-			return 0, fmt.Errorf("failed to rows.Scan: %w", err)
-		}
+	if err = tx.QueryRow(ctx, query, track.Title, track.ArtistID, track.Link, track.ReleasedAt).Scan(&id); err != nil {
+		return 0, fmt.Errorf("failed to rows.Scan: %w", err)
 	}
 
 	return id, nil
@@ -124,4 +129,45 @@ func (r *TracksRepository) CreateTrack(ctx context.Context, tx pgx.Tx, track dao
 
 func (r *TracksRepository) Exists(_ context.Context, _ entities.Track) error {
 	return nil
+}
+
+func (r *TracksRepository) IsExistsTrack(
+	ctx context.Context, tx pgx.Tx, track entities.Track,
+) (exists bool, err error) {
+	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
+	defer cancelFunc()
+
+	query := `
+		SELECT EXISTS(
+			SELECT 
+				1
+			FROM
+				tracks JOIN artists ON tracks.artist_id = artists.artist_id
+			WHERE
+				tracks.title = $1 AND artists.name = $2
+		);`
+
+	if err = tx.QueryRow(ctx, query, track.Title, track.Artist).Scan(&exists); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return true, nil
+		}
+
+		return false, fmt.Errorf("failed to rows.Scan: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (r *TracksRepository) IsExistsArtist(ctx context.Context, tx pgx.Tx, name string) (id int, exists bool) {
+	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
+	defer cancelFunc()
+
+	query := `
+		SELECT artist_id FROM artists WHERE name = $1;`
+
+	if err := tx.QueryRow(ctx, query, name).Scan(&id); err != nil {
+		return 0, false
+	}
+
+	return id, true
 }

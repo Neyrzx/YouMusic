@@ -26,11 +26,19 @@ CREATE TABLE IF NOT EXISTS lyrics
 );
 
 ALTER TABLE IF EXISTS lyrics
-    ADD FOREIGN KEY ("track_id") REFERENCES tracks ("track_id")
+    ADD CONSTRAINT "lyrics_track_id_fkey" FOREIGN KEY ("track_id") REFERENCES tracks ("track_id")
 ;
 
 ALTER TABLE IF EXISTS tracks
-    ADD FOREIGN KEY ("artist_id") REFERENCES artists ("artist_id")
+    ADD CONSTRAINT "tracks_artist_id_fkey" FOREIGN KEY ("artist_id") REFERENCES artists ("artist_id")
+;
+
+ALTER TABLE IF EXISTS tracks
+    ADD CONSTRAINT "tracks_title_artist_id_unique" UNIQUE ("title", "artist_id")
+;
+
+ALTER TABLE IF EXISTS artists
+    ADD CONSTRAINT "artists_name_unique" UNIQUE ("name")
 ;
 
 END;
