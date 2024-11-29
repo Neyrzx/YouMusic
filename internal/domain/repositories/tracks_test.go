@@ -18,18 +18,80 @@ import (
 
 func TestRepositroy(t *testing.T) {
 	tests := []struct {
-		name  string
-		track entities.Track
+		name          string
+		usecase       func(*repositories.TracksRepository) error
+		expectedError error
 	}{
 		{
 			name: "case: create track",
-			track: entities.Track{
-				Title:    "Track Title",
-				Artist:   "Artist Name",
-				Link:     "https://linkto.com/asdo-wd02-3c22-d2c2",
-				Released: time.Now(),
-				Lyrics:   []string{"verse1", "verse2"},
+			usecase: func(tr *repositories.TracksRepository) error {
+				if err := tr.Create(context.Background(), entities.Track{
+					Title:    "Track Title",
+					Artist:   "Artist Name",
+					Link:     "https://linkto.com/asdo-wd02-3c22-d2c2",
+					Released: time.Now(),
+					Lyrics:   []string{"verse1", "verse2"},
+				}); err != nil {
+					return err
+				}
+
+				return nil
 			},
+			expectedError: nil,
+		},
+		{
+			name: "case: duplicate track",
+			usecase: func(tr *repositories.TracksRepository) (err error) {
+				if err = tr.Create(context.Background(), entities.Track{
+					Title:    "Track Title",
+					Artist:   "Artist Name",
+					Link:     "https://linkto.com/asdo-wd02-3c22-d2c2",
+					Released: time.Now(),
+					Lyrics:   []string{"verse1", "verse2"},
+				}); err != nil {
+					return err
+				}
+
+				if err = tr.Create(context.Background(), entities.Track{
+					Title:    "Track Title",
+					Artist:   "Artist Name",
+					Link:     "https://linkto.com/asdo-wd02-3c22-d2c2",
+					Released: time.Now(),
+					Lyrics:   []string{"verse1", "verse2"},
+				}); err != nil {
+					return err
+				}
+
+				return nil
+			},
+			expectedError: repositories.ErrTrackAlreadyExists,
+		},
+		{
+			name: "case: create new track for existing artist",
+			usecase: func(tr *repositories.TracksRepository) (err error) {
+				if err = tr.Create(context.Background(), entities.Track{
+					Title:    "Track Title",
+					Artist:   "Artist Name",
+					Link:     "https://linkto.com/asdo-wd02-3c22-d2c2",
+					Released: time.Now(),
+					Lyrics:   []string{"verse1", "verse2"},
+				}); err != nil {
+					return err
+				}
+
+				if err = tr.Create(context.Background(), entities.Track{
+					Title:    "Track Title #2",
+					Artist:   "Artist Name",
+					Link:     "https://linkto.com/asdo-wd02-3c22-d2c2",
+					Released: time.Now(),
+					Lyrics:   []string{"verse1", "verse2"},
+				}); err != nil {
+					return err
+				}
+
+				return nil
+			},
+			expectedError: repositories.ErrTrackAlreadyExists,
 		},
 	}
 
@@ -38,15 +100,17 @@ func TestRepositroy(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// t.Cleanup(func() {
-			// 	require.NoError(t, container.Restore(ctx))
-			// })
-
 			db, err := pgxpool.New(ctx, connectionString)
 			require.NoError(t, err)
 
 			repo := repositories.NewTracksRepository(db)
-			require.NoError(t, repo.Create(ctx, test.track))
+
+			actualErr := test.usecase(repo)
+			if test.expectedError != nil {
+				require.ErrorIs(t, actualErr, test.expectedError)
+			} else {
+				require.NoError(t, actualErr)
+			}
 		})
 	}
 }
