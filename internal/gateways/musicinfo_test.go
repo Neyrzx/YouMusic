@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/neyrzx/youmusic/internal/config"
 	"github.com/neyrzx/youmusic/internal/dtos"
 	"github.com/neyrzx/youmusic/internal/gateways"
 	"github.com/neyrzx/youmusic/mocks/internal_/gateways/mocks"
@@ -27,9 +27,10 @@ func TestInfo(t *testing.T) {
 	tests := []struct {
 		name            string
 		trackInfoDTO    dtos.TrackInfoDTO
-		gatewayResponse *http.Response
+		gatewayConfig   config.MusicInfoGateway
+		gatewayResponse io.ReadCloser
 		gatewayError    error
-		expectedResult  *dtos.TrackInfoResultDTO
+		expectedResult  dtos.TrackInfoResultDTO
 		expectedError   error
 	}{
 		{
@@ -38,15 +39,16 @@ func TestInfo(t *testing.T) {
 				Song:  "title",
 				Group: "group",
 			},
+			gatewayConfig: config.MusicInfoGateway{},
 			//nolint:lll
-			gatewayResponse: newResponse(http.StatusOK, `
+			gatewayResponse: newResponse(`
 			{
 				"releaseDate":"16.07.2006",
 				"text":"Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight  ",
 				"link": "https://www.youtube.com/watch?v=Xsp3_a-PMTw"
 			}`),
 			gatewayError: nil,
-			expectedResult: &dtos.TrackInfoResultDTO{
+			expectedResult: dtos.TrackInfoResultDTO{
 				ReleaseDate: mustTimeParse("16.07.2006"),
 				//nolint:lll
 				Text: "Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight  ",
@@ -60,9 +62,10 @@ func TestInfo(t *testing.T) {
 				Song:  "title",
 				Group: "group",
 			},
-			gatewayResponse: newResponse(http.StatusBadRequest, ``),
+			gatewayConfig:   config.MusicInfoGateway{},
+			gatewayResponse: newResponse(``),
 			gatewayError:    errGatewayClientBadRequest,
-			expectedResult:  nil,
+			expectedResult:  dtos.TrackInfoResultDTO{},
 			expectedError:   errGatewayClientBadRequest,
 		},
 		{
@@ -71,9 +74,10 @@ func TestInfo(t *testing.T) {
 				Song:  "title",
 				Group: "group",
 			},
-			gatewayResponse: newResponse(http.StatusInternalServerError, ``),
+			gatewayConfig:   config.MusicInfoGateway{},
+			gatewayResponse: newResponse(``),
 			gatewayError:    errGatewayClientBadRequest,
-			expectedResult:  nil,
+			expectedResult:  dtos.TrackInfoResultDTO{},
 			expectedError:   errGatewayClientBadRequest,
 		},
 	}
@@ -87,7 +91,7 @@ func TestInfo(t *testing.T) {
 				Return(test.gatewayResponse, test.gatewayError).
 				Once()
 
-			gateway := gateways.NewMusicInfoGateway(mockInfoGatewayCalls)
+			gateway := gateways.NewMusicInfoGateway(mockInfoGatewayCalls, test.gatewayConfig)
 			actualResult, actualErr := gateway.Info(context.Background(), test.trackInfoDTO)
 
 			require.ErrorIs(t, actualErr, test.expectedError)
@@ -96,11 +100,8 @@ func TestInfo(t *testing.T) {
 	}
 }
 
-func newResponse(statusCode int, body string) *http.Response {
-	return &http.Response{
-		StatusCode: statusCode,
-		Body:       io.NopCloser(strings.NewReader(body)),
-	}
+func newResponse(body string) io.ReadCloser {
+	return io.NopCloser(strings.NewReader(body))
 }
 
 func mustTimeParse(value string) time.Time {

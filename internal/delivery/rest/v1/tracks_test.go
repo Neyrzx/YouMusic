@@ -65,8 +65,8 @@ func TestCreateCases(t *testing.T) {
 			expectedResponse: `
 			{
 				"message":{
-					"TracksCreateRequest.Group":"field is required",
-					"TracksCreateRequest.Song":"field is required"
+					"group":"field is required",
+					"song":"field is required"
 				}
 			}`,
 			expectedCalls: func(mockService *mocks.MockTracksService) {
@@ -85,7 +85,7 @@ func TestCreateCases(t *testing.T) {
 			expectedResponse: `
 			{
 				"message": {
-					"TracksCreateRequest.Song": "field is required"
+					"song": "field is required"
 				}
 			}`,
 			expectedCalls: func(mockService *mocks.MockTracksService) {
@@ -104,7 +104,7 @@ func TestCreateCases(t *testing.T) {
 			expectedResponse: `
 			{
 				"message": {
-					"TracksCreateRequest.Group": "field is required"
+					"group": "field is required"
 				}
 			}`,
 			expectedCalls: func(mockService *mocks.MockTracksService) {
