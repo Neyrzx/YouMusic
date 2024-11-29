@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	http "net/http"
+	io "io"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -22,23 +22,23 @@ func (_m *MockClient) EXPECT() *MockClient_Expecter {
 }
 
 // Get provides a mock function with given fields: _a0
-func (_m *MockClient) Get(_a0 string) (*http.Response, error) {
+func (_m *MockClient) Get(_a0 string) (io.ReadCloser, error) {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
 	}
 
-	var r0 *http.Response
+	var r0 io.ReadCloser
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (*http.Response, error)); ok {
+	if rf, ok := ret.Get(0).(func(string) (io.ReadCloser, error)); ok {
 		return rf(_a0)
 	}
-	if rf, ok := ret.Get(0).(func(string) *http.Response); ok {
+	if rf, ok := ret.Get(0).(func(string) io.ReadCloser); ok {
 		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*http.Response)
+			r0 = ret.Get(0).(io.ReadCloser)
 		}
 	}
 
@@ -69,12 +69,12 @@ func (_c *MockClient_Get_Call) Run(run func(_a0 string)) *MockClient_Get_Call {
 	return _c
 }
 
-func (_c *MockClient_Get_Call) Return(_a0 *http.Response, _a1 error) *MockClient_Get_Call {
+func (_c *MockClient_Get_Call) Return(_a0 io.ReadCloser, _a1 error) *MockClient_Get_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockClient_Get_Call) RunAndReturn(run func(string) (*http.Response, error)) *MockClient_Get_Call {
+func (_c *MockClient_Get_Call) RunAndReturn(run func(string) (io.ReadCloser, error)) *MockClient_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -1,4 +1,4 @@
-package tracks
+package repositories
 
 import (
 	"context"
@@ -13,15 +13,15 @@ import (
 
 const queryTimeout = 120 * time.Second
 
-type Repository struct {
+type TracksRepository struct {
 	db *pgxpool.Pool
 }
 
-func NewRepository(db *pgxpool.Pool) *Repository {
-	return &Repository{db: db}
+func NewTracksRepository(db *pgxpool.Pool) *TracksRepository {
+	return &TracksRepository{db: db}
 }
 
-func (r *Repository) Create(ctx context.Context, track entities.Track) (err error) {
+func (r *TracksRepository) Create(ctx context.Context, track entities.Track) (err error) {
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
@@ -64,7 +64,7 @@ func (r *Repository) Create(ctx context.Context, track entities.Track) (err erro
 	return tx.Commit(ctx)
 }
 
-func (r *Repository) CreateLyric(ctx context.Context, tx pgx.Tx, lyrics []dao.LyricDAO) (err error) {
+func (r *TracksRepository) CreateLyric(ctx context.Context, tx pgx.Tx, lyrics []dao.LyricDAO) (err error) {
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
@@ -82,7 +82,7 @@ func (r *Repository) CreateLyric(ctx context.Context, tx pgx.Tx, lyrics []dao.Ly
 	return nil
 }
 
-func (r *Repository) CreateArtist(ctx context.Context, tx pgx.Tx, artist dao.ArtistDAO) (id int, err error) {
+func (r *TracksRepository) CreateArtist(ctx context.Context, tx pgx.Tx, artist dao.ArtistDAO) (id int, err error) {
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
@@ -102,7 +102,7 @@ func (r *Repository) CreateArtist(ctx context.Context, tx pgx.Tx, artist dao.Art
 	return id, nil
 }
 
-func (r *Repository) CreateTrack(ctx context.Context, tx pgx.Tx, track dao.TrackDAO) (id int, err error) {
+func (r *TracksRepository) CreateTrack(ctx context.Context, tx pgx.Tx, track dao.TrackDAO) (id int, err error) {
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
@@ -122,6 +122,6 @@ func (r *Repository) CreateTrack(ctx context.Context, tx pgx.Tx, track dao.Track
 	return id, nil
 }
 
-func (r *Repository) Exists(_ context.Context, _ entities.Track) error {
+func (r *TracksRepository) Exists(_ context.Context, _ entities.Track) error {
 	return nil
 }

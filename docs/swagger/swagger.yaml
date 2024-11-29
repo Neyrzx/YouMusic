@@ -1,4 +1,22 @@
 basePath: /api/v1
+definitions:
+  v1.HTTPError:
+    properties:
+      message:
+        type: string
+    type: object
+  v1.TracksCreateRequest:
+    properties:
+      group:
+        example: Muse
+        type: string
+      song:
+        example: Song name
+        type: string
+    required:
+    - group
+    - song
+    type: object
 host: localhost:9090
 info:
   contact:
@@ -11,5 +29,43 @@ info:
   termsOfService: http://swagger.io/terms/
   title: YouMusic
   version: 0.0.1
-paths: {}
+paths:
+  /tracks:
+    post:
+      consumes:
+      - application/json
+      description: Creating track
+      parameters:
+      - description: Create track by song and group names.
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/v1.TracksCreateRequest'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success created
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+            type: object
+        "422":
+          description: Validation errors
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+            type: object
+      summary: Create track
+      tags:
+      - Tracks
 swagger: "2.0"
