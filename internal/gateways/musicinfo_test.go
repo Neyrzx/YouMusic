@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/neyrzx/youmusic/internal/config"
-	"github.com/neyrzx/youmusic/internal/dtos"
+	"github.com/neyrzx/youmusic/internal/domain/entities"
 	"github.com/neyrzx/youmusic/internal/gateways"
 	"github.com/neyrzx/youmusic/mocks/internal_/gateways/mocks"
 	"github.com/neyrzx/youmusic/pkg/utils"
@@ -26,21 +26,20 @@ func TestInfo(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		trackInfoDTO    dtos.TrackInfoDTO
+		trackInfoDTO    entities.TrackInfo
 		gatewayConfig   config.MusicInfoGateway
 		gatewayResponse io.ReadCloser
 		gatewayError    error
-		expectedResult  dtos.TrackInfoResultDTO
+		expectedResult  entities.TrackInfoResult
 		expectedError   error
 	}{
 		{
 			name: "success response",
-			trackInfoDTO: dtos.TrackInfoDTO{
+			trackInfoDTO: entities.TrackInfo{
 				Song:  "title",
 				Group: "group",
 			},
 			gatewayConfig: config.MusicInfoGateway{},
-			//nolint:lll
 			gatewayResponse: newResponse(`
 			{
 				"releaseDate":"16.07.2006",
@@ -48,36 +47,35 @@ func TestInfo(t *testing.T) {
 				"link": "https://www.youtube.com/watch?v=Xsp3_a-PMTw"
 			}`),
 			gatewayError: nil,
-			expectedResult: dtos.TrackInfoResultDTO{
+			expectedResult: entities.TrackInfoResult{
 				ReleaseDate: mustTimeParse("16.07.2006"),
-				//nolint:lll
-				Text: "Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight  ",
-				Link: "https://www.youtube.com/watch?v=Xsp3_a-PMTw",
+				Text:        "Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight  ",
+				Link:        "https://www.youtube.com/watch?v=Xsp3_a-PMTw",
 			},
 			expectedError: nil,
 		},
 		{
 			name: "gateway client error",
-			trackInfoDTO: dtos.TrackInfoDTO{
+			trackInfoDTO: entities.TrackInfo{
 				Song:  "title",
 				Group: "group",
 			},
 			gatewayConfig:   config.MusicInfoGateway{},
 			gatewayResponse: newResponse(``),
 			gatewayError:    errGatewayClientBadRequest,
-			expectedResult:  dtos.TrackInfoResultDTO{},
+			expectedResult:  entities.TrackInfoResult{},
 			expectedError:   errGatewayClientBadRequest,
 		},
 		{
 			name: "gateway client error #2",
-			trackInfoDTO: dtos.TrackInfoDTO{
+			trackInfoDTO: entities.TrackInfo{
 				Song:  "title",
 				Group: "group",
 			},
 			gatewayConfig:   config.MusicInfoGateway{},
 			gatewayResponse: newResponse(``),
 			gatewayError:    errGatewayClientBadRequest,
-			expectedResult:  dtos.TrackInfoResultDTO{},
+			expectedResult:  entities.TrackInfoResult{},
 			expectedError:   errGatewayClientBadRequest,
 		},
 	}
