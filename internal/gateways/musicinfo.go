@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/neyrzx/youmusic/internal/config"
-	"github.com/neyrzx/youmusic/internal/dtos"
+	"github.com/neyrzx/youmusic/internal/domain/entities"
 	"github.com/neyrzx/youmusic/pkg/utils"
 )
 
@@ -33,23 +33,23 @@ type InfoResponse struct {
 	Link        string            `json:"link"`
 }
 
-func (gw *MusicInfoGateway) Info(ctx context.Context, track dtos.TrackInfoDTO) (dtos.TrackInfoResultDTO, error) {
+func (gw *MusicInfoGateway) Info(ctx context.Context, track entities.TrackInfo) (entities.TrackInfoResult, error) {
 	_, cancelFunc := context.WithTimeout(ctx, timeoutInfo)
 	defer cancelFunc()
 
 	path := fmt.Sprintf("%s%s?song=%s&group=%s", gw.cfg.URL, gw.cfg.Route, track.Song, track.Group)
 	data, err := gw.client.Get(path)
 	if err != nil {
-		return dtos.TrackInfoResultDTO{}, fmt.Errorf("failed to client.Get(%s): %w", path, err)
+		return entities.TrackInfoResult{}, fmt.Errorf("failed to client.Get(%s): %w", path, err)
 	}
 	defer data.Close()
 
 	var response InfoResponse
 	if err = json.NewDecoder(data).Decode(&response); err != nil {
-		return dtos.TrackInfoResultDTO{}, fmt.Errorf("failed to json.Decode(): %w", err)
+		return entities.TrackInfoResult{}, fmt.Errorf("failed to json.Decode(): %w", err)
 	}
 
-	return dtos.TrackInfoResultDTO{
+	return entities.TrackInfoResult{
 		ReleaseDate: time.Time(response.ReleaseDate),
 		Text:        response.Text,
 		Link:        response.Link,

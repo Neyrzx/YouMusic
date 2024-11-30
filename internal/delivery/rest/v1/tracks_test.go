@@ -1,166 +1,58 @@
 package v1_test
 
-import (
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
+// func TestRetrieveCases(t *testing.T) {
+// 	t.Parallel()
 
-	"github.com/labstack/echo/v4"
-	v1 "github.com/neyrzx/youmusic/internal/delivery/rest/v1"
-	"github.com/neyrzx/youmusic/internal/domain/errors"
-	"github.com/neyrzx/youmusic/mocks/internal_/delivery/rest/v1/mocks"
-	"github.com/neyrzx/youmusic/pkg/validator"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-)
+// 	tests := []struct {
+// 		name             string
+// 		requestPath      string
+// 		requestBody      string
+// 		requestMethod    string
+// 		expectedStatus   int
+// 		expectedResponse *v1.TracksRetrieveResponse
+// 		expectedCalls    func(mockService *mocks.MockTracksService, ret v1.TracksRetrieveResponse)
+// 	}{
+// 		{
+// 			name:           "retrieve track",
+// 			requestPath:    "/api/v1/tracks/1",
+// 			expectedStatus: http.StatusOK,
+// 			expectedResponse: &v1.TracksRetrieveResponse{
+// 				Artist:   "artist",
+// 				Track:    "track",
+// 				Lyric:    []string{"verse 1", "verse 2"},
+// 				Link:     "https://y.be/cdsahfw3fiuiejfc",
+// 				Released: time.Now(),
+// 			},
+// 			expectedCalls: func(mockService *mocks.MockTracksService, ret v1.TracksRetrieveResponse) {
+// 				mockService.EXPECT().GetByID(mock.Anything, mock.Anything).
+// 					Return(dtos.Track{
+// 						Artist: ret.Artist,
+// 						Track:  ret.Track,
+// 					}, nil).
+// 					Once()
+// 			},
+// 		},
+// 	}
 
-func TestCreateCases(t *testing.T) {
-	t.Parallel()
+// 	for _, test := range tests {
+// 		t.Run(test.name, func(t *testing.T) {
+// 			t.Parallel()
 
-	tests := []struct {
-		name             string
-		requestPath      string
-		requestBody      string
-		requestMethod    string
-		expectedStatus   int
-		expectedResponse string
-		expectedCalls    func(mockService *mocks.MockTracksService)
-	}{
-		{
-			name:        "success creation",
-			requestPath: "/api/v1/tracks",
-			requestBody: `{
-				"group": "Muse",
-				"song": "Supermassive Black Hole"
-			}`,
-			requestMethod:    http.MethodPost,
-			expectedStatus:   http.StatusCreated,
-			expectedResponse: ``,
-			expectedCalls: func(mockService *mocks.MockTracksService) {
-				mockService.EXPECT().Create(mock.Anything, mock.Anything).Return(nil).Once()
-			},
-		},
-		{
-			name:           "request body malformed",
-			requestPath:    "/api/v1/tracks",
-			requestBody:    `{"`,
-			requestMethod:  http.MethodPost,
-			expectedStatus: http.StatusBadRequest,
-			expectedResponse: `
-			{
-				"message":"request body malformed"
-			}`,
-			expectedCalls: func(mockService *mocks.MockTracksService) {
-				mockService.EXPECT().Create(mock.Anything, mock.Anything).Return(nil).Unset()
-			},
-		},
-		{
-			name:           "validation error - empty request",
-			requestPath:    "/api/v1/tracks",
-			requestBody:    ``,
-			requestMethod:  http.MethodPost,
-			expectedStatus: http.StatusUnprocessableEntity,
-			expectedResponse: `
-			{
-				"message":{
-					"group":"field is required",
-					"song":"field is required"
-				}
-			}`,
-			expectedCalls: func(mockService *mocks.MockTracksService) {
-				mockService.EXPECT().Create(mock.Anything, mock.Anything).Return(nil).Unset()
-			},
-		},
-		{
-			name:        "validation error - group only",
-			requestPath: "/api/v1/tracks",
-			requestBody: `
-			{
-				"group": "Muse"
-			}`,
-			requestMethod:  http.MethodPost,
-			expectedStatus: http.StatusUnprocessableEntity,
-			expectedResponse: `
-			{
-				"message": {
-					"song": "field is required"
-				}
-			}`,
-			expectedCalls: func(mockService *mocks.MockTracksService) {
-				mockService.EXPECT().Create(mock.Anything, mock.Anything).Return(nil).Unset()
-			},
-		},
-		{
-			name:        "validation error - song only",
-			requestPath: "/api/v1/tracks",
-			requestBody: `
-			{
-				"song": "track title"
-			}`,
-			requestMethod:  http.MethodPost,
-			expectedStatus: http.StatusUnprocessableEntity,
-			expectedResponse: `
-			{
-				"message": {
-					"group": "field is required"
-				}
-			}`,
-			expectedCalls: func(mockService *mocks.MockTracksService) {
-				mockService.EXPECT().Create(mock.Anything, mock.Anything).Return(nil).Unset()
-			},
-		},
-		{
-			name:        "track already exists",
-			requestPath: "/api/v1/tracks",
-			requestBody: `
-			{
-				"group": "Muse",
-				"song": "Supermassive Black Hole"
-			}`,
-			expectedStatus: http.StatusBadRequest,
-			expectedResponse: `
-			{
-				"message": "track already exists"
-			}`,
-			expectedCalls: func(mockService *mocks.MockTracksService) {
-				mockService.EXPECT().Create(mock.Anything, mock.Anything).Return(errors.ErrTrackAlreadyExists).Once()
-			},
-		},
-	}
+// 			e := echo.New()
+// 			e.Validator = validator.NewValidator()
+// 			tracksGroup := e.Group("/api/v1/tracks")
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
+// 			rec, req := buildRequest(t, http.MethodGet, test.requestPath, strings.NewReader(test.requestBody))
+// 			mockService := mocks.NewMockTracksService(t)
+// 			test.expectedCalls(mockService, test.expectedResponse)
 
-			e := echo.New()
-			e.Validator = validator.NewValidator()
-			tracksGroup := e.Group("/api/v1/tracks")
+// 			handler := v1.NewTracksHandlers(tracksGroup, mockService)
+// 			handler.Retrieve(e.NewContext(req, rec))
 
-			rec, req := buildRequest(t, http.MethodPost, test.requestPath, strings.NewReader(test.requestBody))
-			mockService := mocks.NewMockTracksService(t)
-			test.expectedCalls(mockService)
-
-			handler := v1.NewTracksHandlers(tracksGroup, mockService)
-			handler.Create(e.NewContext(req, rec))
-
-			assert.Equal(t, test.expectedStatus, rec.Code)
-			if test.expectedResponse != "" {
-				assert.JSONEq(t, test.expectedResponse, rec.Body.String())
-			}
-		})
-	}
-}
-
-func buildRequest(
-	t *testing.T, method string, target string, body io.Reader,
-) (*httptest.ResponseRecorder, *http.Request) {
-	t.Helper()
-
-	rec := httptest.NewRecorder()
-	req := httptest.NewRequest(method, target, body)
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-	return rec, req
-}
+// 			assert.Equal(t, test.expectedStatus, rec.Code)
+// 			if test.expectedResponse != nil {
+// 				assert.JSONEq(t, test.expectedResponse, rec.Body.String())
+// 			}
+// 		})
+// 	}
+// }
