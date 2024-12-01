@@ -11,6 +11,9 @@ type TracksService interface {
 	Create(ctx context.Context, track entities.TrackCreate) error
 	GetByID(ctx context.Context, ID int) (entities.Track, error)
 	GetList(ctx context.Context, filters entities.TrackGetListFilters) ([]entities.Track, error)
+	Update(ctx context.Context, track entities.TrackUpdate) error
+	Delete(ctx context.Context, trackID int) error
+	GetLyric(ctx context.Context, trackID int, offset int) (entities.TrackVerse, error)
 }
 
 type TracksHandlers struct {
@@ -18,11 +21,14 @@ type TracksHandlers struct {
 }
 
 func NewTracksHandlers(g *echo.Group, ts TracksService) *TracksHandlers {
-	ctl := &TracksHandlers{trackService: ts}
-	g.POST("/", ctl.Create)
-	g.GET("/", ctl.List)
-	g.GET("/:id", ctl.Retrieve)
-	return ctl
+	h := &TracksHandlers{trackService: ts}
+	g.POST("/", h.Create)
+	g.GET("/", h.List)
+	g.GET("/:id/", h.Retrieve)
+	g.PATCH("/:id/", h.Update)
+	g.DELETE("/:id/", h.Delete)
+	g.GET("/:id/lyric/", h.LyricRetrieve)
+	return h
 }
 
 type HTTPError struct {

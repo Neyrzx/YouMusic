@@ -1,18 +1,9 @@
 package rest
 
 import (
-	"context"
-
 	"github.com/labstack/echo/v4"
 	v1 "github.com/neyrzx/youmusic/internal/delivery/rest/v1"
-	"github.com/neyrzx/youmusic/internal/domain/entities"
 )
-
-type TracksService interface {
-	Create(ctx context.Context, track entities.TrackCreate) error
-	GetByID(ctx context.Context, ID int) (entities.Track, error)
-	GetList(ctx context.Context, filters entities.TrackGetListFilters) ([]entities.Track, error)
-}
 
 // @title YouMusic
 // @version 0.0.1
@@ -27,7 +18,7 @@ type TracksService interface {
 
 // @host localhost:9090
 // @BasePath /api/v1
-func InitAPI(e *echo.Echo, ts TracksService) {
+func InitAPI(e *echo.Echo, ts v1.TracksService) {
 	api := e.Group("api/v1")
 
 	tracksGroup := api.Group("/tracks")

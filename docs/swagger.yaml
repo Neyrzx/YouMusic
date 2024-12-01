@@ -5,16 +5,21 @@ definitions:
       message:
         type: string
     type: object
-  v1.TrackResponse:
+  v1.TrackLyricResponse:
+    properties:
+      orderID:
+        type: integer
+      verse:
+        type: string
+    type: object
+  v1.TrackUpdateRequest:
     properties:
       artist:
         type: string
       link:
         type: string
       lyric:
-        items:
-          type: string
-        type: array
+        type: string
       released:
         type: string
       track:
@@ -31,6 +36,21 @@ definitions:
     required:
     - group
     - song
+    type: object
+  v1.TracksResponse:
+    properties:
+      artist:
+        type: string
+      link:
+        type: string
+      lyric:
+        items:
+          type: string
+        type: array
+      released:
+        type: string
+      track:
+        type: string
     type: object
   v1.TracksRetrieveResponse:
     properties:
@@ -97,18 +117,16 @@ paths:
           description: Success response
           schema:
             items:
-              $ref: '#/definitions/v1.TrackResponse'
+              $ref: '#/definitions/v1.TracksResponse'
             type: array
         "400":
           description: Bad request
           schema:
             $ref: '#/definitions/v1.HTTPError'
-            type: object
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/v1.HTTPError'
-            type: object
       summary: List of tracks
       tags:
       - Tracks
@@ -123,7 +141,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/v1.TracksCreateRequest'
-          type: object
       produces:
       - application/json
       responses:
@@ -135,22 +152,43 @@ paths:
           description: Bad request
           schema:
             $ref: '#/definitions/v1.HTTPError'
-            type: object
-        "422":
-          description: Validation errors
-          schema:
-            $ref: '#/definitions/v1.HTTPError'
-            type: object
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/v1.HTTPError'
-            type: object
       summary: Create track
       tags:
       - Tracks
-  /tracks/{id}:
-    post:
+  /tracks/{id}/:
+    delete:
+      consumes:
+      - application/json
+      description: Deliting track by track id
+      parameters:
+      - description: track id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+      summary: Delete track
+      tags:
+      - Tracks
+    get:
       consumes:
       - application/json
       description: Retriving track
@@ -167,23 +205,90 @@ paths:
           description: get track result
           schema:
             $ref: '#/definitions/v1.TracksRetrieveResponse'
-            type: object
         "400":
           description: Bad request
           schema:
             $ref: '#/definitions/v1.HTTPError'
-            type: object
         "422":
           description: Validation errors
           schema:
             $ref: '#/definitions/v1.HTTPError'
-            type: object
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/v1.HTTPError'
-            type: object
       summary: Retrive track
+      tags:
+      - Tracks
+    patch:
+      consumes:
+      - application/json
+      description: Updating the track
+      parameters:
+      - description: track id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: track id
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/v1.TrackUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+      summary: Update the tracks
+      tags:
+      - Tracks
+  /tracks/{id}/lyric/:
+    get:
+      consumes:
+      - application/json
+      description: Retrive lyric verse with offset
+      parameters:
+      - description: track id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: verse offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success response
+          schema:
+            $ref: '#/definitions/v1.TrackLyricResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+        "422":
+          description: Validation errors
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.HTTPError'
+      summary: Retrive verse
       tags:
       - Tracks
 swagger: "2.0"

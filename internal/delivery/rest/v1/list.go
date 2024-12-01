@@ -42,7 +42,7 @@ type TracksResponse struct {
 // @Param				 track query string false "Title of track."
 // @Param				 releasedyaer query string false "List of tracks."
 // @Param				 link query string false "Exact link"
-// @Success      200  {array}  v1.TrackResponse "Success response"
+// @Success      200  {array}  v1.TracksResponse "Success response"
 // @Failure      400  {object}  v1.HTTPError "Bad request"
 // @Failure      500  {object}  v1.HTTPError "Internal server error"
 // @Router       /tracks/ [get]
@@ -50,10 +50,12 @@ func (h *TracksHandlers) List(c echo.Context) (err error) {
 	var queryparam TracksListQuery
 
 	if err = c.Bind(&queryparam); err != nil {
+		c.Logger().Errorf("failed to List.Bind: %s", err.Error())
 		return c.JSON(http.StatusBadRequest, HTTPError{Message: err.Error()})
 	}
 
 	if err = c.Validate(queryparam); err != nil {
+		c.Logger().Errorf("failed to List.Validate: %s", err.Error())
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
@@ -66,6 +68,7 @@ func (h *TracksHandlers) List(c echo.Context) (err error) {
 		ReleasedYear: queryparam.ReleasedYear,
 		Link:         queryparam.Link,
 	}); err != nil {
+		c.Logger().Errorf("failed to trackService.GetList: %s", err.Error())
 		return c.JSON(http.StatusInternalServerError, HTTPError{Message: "something went wrong"})
 	}
 

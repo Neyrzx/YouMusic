@@ -21,7 +21,6 @@ type TracksCreateRequest struct {
 // @Param				 input body v1.TracksCreateRequest true "Create track by song and group names."
 // @Success      200  {string}  string "Success created"
 // @Failure      400  {object}  v1.HTTPError "Bad request"
-// @Failure      422  {object}  v1.HTTPError "Validation errors"
 // @Failure      500  {object}  v1.HTTPError "Internal server error"
 // @Router       /tracks/ [post]
 func (h *TracksHandlers) Create(c echo.Context) (err error) {
@@ -34,7 +33,7 @@ func (h *TracksHandlers) Create(c echo.Context) (err error) {
 
 	if err = c.Validate(request); err != nil {
 		c.Logger().Errorf("failed to Create.c.Validate: %s", err.Error())
-		return c.JSON(http.StatusUnprocessableEntity, err)
+		return c.JSON(http.StatusBadRequest, err)
 	}
 
 	if err = h.trackService.Create(c.Request().Context(), entities.TrackCreate{

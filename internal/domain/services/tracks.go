@@ -12,15 +12,22 @@ import (
 	"github.com/neyrzx/youmusic/pkg/utils"
 )
 
-const createMethodTimeout = 15 * time.Second
+const methodTimout = 120 * time.Second
 
 type TracksRepository interface {
 	CreateArtist(ctx context.Context, tx pgx.Tx, artist dao.Artist) (id int, err error)
 	CreateTrack(ctx context.Context, tx pgx.Tx, track dao.Track) (id int, err error)
 	CreateLyric(ctx context.Context, tx pgx.Tx, lyrics []dao.Lyric) (err error)
+	CreateLyricFromSlice(ctx context.Context, tx pgx.Tx, trackID int, lyrics []string) (err error)
+	UpdateArtist(ctx context.Context, tx pgx.Tx, artist dao.Artist) (err error)
+	UpdateTrack(ctx context.Context, tx pgx.Tx, artist dao.Track) (err error)
+	DeleteLyricByTrackID(ctx context.Context, tx pgx.Tx, trackID int) (err error)
+	DeleteTrackByID(ctx context.Context, trackID int) (err error)
 	GetByID(ctx context.Context, ID int) (entities.Track, error)
+	GetArtistIDByTrackID(ctx context.Context, tx pgx.Tx, id int) (artistID int, err error)
 	GetTracksByFilter(ctx context.Context, tx pgx.Tx, filter entities.TrackGetListFilters) (tracks map[int]entities.Track, err error)
 	GetLyricsByTrackIDs(ctx context.Context, tx pgx.Tx, IDs []int) (lyrics []dao.Lyric, err error)
+	GetLyricPaginated(ctx context.Context, tx pgx.Tx, trackID int, offset int) (lyric dao.Lyric, err error)
 	IsTrackExists(ctx context.Context, trackName string, artistName string) (exists bool, err error)
 	IsArtistExists(ctx context.Context, tx pgx.Tx, name string) (id int, exists bool)
 	WithTx(ctx context.Context, fn func(tx pgx.Tx) error) error
@@ -40,7 +47,7 @@ func NewTracksService(repo TracksRepository, infoGateway TracksInfoGateway) *Tra
 }
 
 func (s *TracksService) Create(ctx context.Context, track entities.TrackCreate) (err error) {
-	ctx, cancelFunc := context.WithTimeout(ctx, createMethodTimeout)
+	ctx, cancelFunc := context.WithTimeout(ctx, methodTimout)
 	defer cancelFunc()
 
 	trackExists, err := s.repo.IsTrackExists(ctx, track.Title, track.Artist)
@@ -102,7 +109,7 @@ func (s *TracksService) Create(ctx context.Context, track entities.TrackCreate) 
 }
 
 func (s *TracksService) GetByID(ctx context.Context, id int) (track entities.Track, err error) {
-	ctx, cancelFunc := context.WithTimeout(ctx, createMethodTimeout)
+	ctx, cancelFunc := context.WithTimeout(ctx, methodTimout)
 	defer cancelFunc()
 
 	if track, err = s.repo.GetByID(ctx, id); err != nil {
@@ -113,7 +120,7 @@ func (s *TracksService) GetByID(ctx context.Context, id int) (track entities.Tra
 }
 
 func (s *TracksService) GetList(ctx context.Context, filters entities.TrackGetListFilters) (tracks []entities.Track, err error) {
-	ctx, cancelFunc := context.WithTimeout(ctx, createMethodTimeout)
+	ctx, cancelFunc := context.WithTimeout(ctx, methodTimout)
 	defer cancelFunc()
 
 	err = s.repo.WithTx(ctx, func(tx pgx.Tx) error {
@@ -152,4 +159,77 @@ func (s *TracksService) GetList(ctx context.Context, filters entities.TrackGetLi
 	}
 
 	return tracks, nil
+}
+
+func (s *TracksService) Update(ctx context.Context, updateData entities.TrackUpdate) (err error) {
+	ctx, cancelFunc := context.WithTimeout(ctx, methodTimout)
+	defer cancelFunc()
+
+	err = s.repo.WithTx(ctx, func(tx pgx.Tx) error {
+		var (
+			artist dao.Artist
+			track  dao.Track
+			lyrics []string
+		)
+
+		if updateData.Artist != "" {
+			if artist.ArtistID, err = s.repo.GetArtistIDByTrackID(ctx, tx, updateData.TrackID); err != nil {
+				return fmt.Errorf("failed to repo.GetArtistIDByTrackID: %w", err)
+			}
+			artist.Name = updateData.Artist
+			if err = s.repo.UpdateArtist(ctx, tx, artist); err != nil {
+				return fmt.Errorf("failed to repo.UpdateArtist: %w", err)
+			}
+		}
+
+		if updateData.Track != "" {
+			track = dao.Track{
+				TrackID:    updateData.TrackID,
+				ArtistID:   artist.ArtistID,
+				Title:      updateData.Track,
+				Link:       updateData.Link,
+				ReleasedAt: updateData.Released,
+			}
+			if err = s.repo.UpdateTrack(ctx, tx, track); err != nil {
+				return fmt.Errorf("failed to repo.UpdateTrack: %w", err)
+			}
+		}
+
+		if updateData.Lyric != "" {
+			lyrics = utils.SplitLyricsToVerses(ctx, updateData.Lyric)
+			if err = s.repo.DeleteLyricByTrackID(ctx, tx, updateData.TrackID); err != nil {
+				return fmt.Errorf("failed to repo.DeleteLyricByTrackID: %w", err)
+			}
+			if err = s.repo.CreateLyricFromSlice(ctx, tx, updateData.TrackID, lyrics); err != nil {
+				return fmt.Errorf("failed to repo.CreateLyricFromSlice: %w", err)
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update data: %w", err)
+	}
+
+	return nil
+}
+
+func (s *TracksService) Delete(ctx context.Context, trackID int) (err error) {
+	if err = s.repo.DeleteTrackByID(ctx, trackID); err != nil {
+		return fmt.Errorf("failed to repo.DeleteTrackByID %w", err)
+	}
+
+	return nil
+}
+
+func (s *TracksService) GetLyric(ctx context.Context, trackID int, offset int) (entities.TrackVerse, error) {
+	verseDao, err := s.repo.GetLyricPaginated(ctx, nil, trackID, offset)
+	if err != nil {
+		return entities.TrackVerse{}, fmt.Errorf("failed to repo.GetLyricPaginated: %w", err)
+	}
+
+	return entities.TrackVerse{
+		OrderID: verseDao.LyricID,
+		Verse:   verseDao.Verse,
+	}, nil
 }

@@ -32,7 +32,7 @@ type TracksRetrieveResponse struct {
 // @Failure      400  {object}  v1.HTTPError "Bad request"
 // @Failure      422  {object}  v1.HTTPError "Validation errors"
 // @Failure      500  {object}  v1.HTTPError "Internal server error"
-// @Router       /tracks/{id} [post]
+// @Router       /tracks/{id}/ [get]
 func (h *TracksHandlers) Retrieve(c echo.Context) (err error) {
 	var pathParam TracksRetrievePathParam
 
@@ -58,6 +58,6 @@ func (h *TracksHandlers) Retrieve(c echo.Context) (err error) {
 		Track:    track.Track,
 		Lyric:    track.Lyric,
 		Link:     track.Link,
-		Released: time.Now(),
+		Released: track.Released,
 	})
 }

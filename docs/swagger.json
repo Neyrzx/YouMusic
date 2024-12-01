@@ -74,21 +74,19 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/v1.TrackResponse"
+                                "$ref": "#/definitions/v1.TracksResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/v1.HTTPError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/v1.HTTPError"
                         }
                     }
@@ -113,7 +111,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/v1.TracksCreateRequest"
                         }
                     }
@@ -128,29 +125,20 @@
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/v1.HTTPError"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation errors",
-                        "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/v1.HTTPError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/v1.HTTPError"
                         }
                     }
                 }
             }
         },
-        "/tracks/{id}": {
-            "post": {
+        "/tracks/{id}/": {
+            "get": {
                 "description": "Retriving track",
                 "consumes": [
                     "application/json"
@@ -175,28 +163,173 @@
                     "200": {
                         "description": "get track result",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/v1.TracksRetrieveResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/v1.HTTPError"
                         }
                     },
                     "422": {
                         "description": "Validation errors",
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/v1.HTTPError"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
+                            "$ref": "#/definitions/v1.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deliting track by track id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tracks"
+                ],
+                "summary": "Delete track",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "track id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/v1.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/v1.HTTPError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updating the track",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tracks"
+                ],
+                "summary": "Update the tracks",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "track id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "track id",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.TrackUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/v1.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/v1.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/tracks/{id}/lyric/": {
+            "get": {
+                "description": "Retrive lyric verse with offset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tracks"
+                ],
+                "summary": "Retrive verse",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "track id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "verse offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "schema": {
+                            "$ref": "#/definitions/v1.TrackLyricResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/v1.HTTPError"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation errors",
+                        "schema": {
+                            "$ref": "#/definitions/v1.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
                             "$ref": "#/definitions/v1.HTTPError"
                         }
                     }
@@ -213,7 +346,18 @@
                 }
             }
         },
-        "v1.TrackResponse": {
+        "v1.TrackLyricResponse": {
+            "type": "object",
+            "properties": {
+                "orderID": {
+                    "type": "integer"
+                },
+                "verse": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.TrackUpdateRequest": {
             "type": "object",
             "properties": {
                 "artist": {
@@ -223,10 +367,7 @@
                     "type": "string"
                 },
                 "lyric": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "released": {
                     "type": "string"
@@ -250,6 +391,29 @@
                 "song": {
                     "type": "string",
                     "example": "Song name"
+                }
+            }
+        },
+        "v1.TracksResponse": {
+            "type": "object",
+            "properties": {
+                "artist": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "lyric": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "released": {
+                    "type": "string"
+                },
+                "track": {
+                    "type": "string"
                 }
             }
         },

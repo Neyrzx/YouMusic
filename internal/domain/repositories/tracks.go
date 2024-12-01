@@ -51,10 +51,18 @@ func (r *TracksRepository) WithTx(ctx context.Context, fn func(tx pgx.Tx) error)
 	return tx.Commit(ctx)
 }
 
-func (r *TracksRepository) CreateLyric(ctx context.Context, tx pgx.Tx, lyrics []dao.Lyric) (err error) {
-	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
-	defer cancelFunc()
+func (r *TracksRepository) DeleteLyricByTrackID(ctx context.Context, tx pgx.Tx, trackID int) (err error) {
+	sql := `DELETE FROM lyrics WHERE track_id = $1;`
 
+	err = tx.QueryRow(ctx, sql, trackID).Scan()
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return fmt.Errorf("failed to tx.QueryRow: %w", err)
+	}
+
+	return nil
+}
+
+func (r *TracksRepository) CreateLyric(ctx context.Context, tx pgx.Tx, lyrics []dao.Lyric) (err error) {
 	_, err = tx.CopyFrom(ctx,
 		pgx.Identifier{"lyrics"},
 		[]string{"track_id", "verse_text"},
@@ -69,14 +77,26 @@ func (r *TracksRepository) CreateLyric(ctx context.Context, tx pgx.Tx, lyrics []
 	return nil
 }
 
-func (r *TracksRepository) CreateArtist(ctx context.Context, tx pgx.Tx, artist dao.Artist) (id int, err error) {
-	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
-	defer cancelFunc()
+func (r *TracksRepository) CreateLyricFromSlice(ctx context.Context, tx pgx.Tx, trackID int, lyrics []string) (err error) {
+	_, err = tx.CopyFrom(ctx,
+		pgx.Identifier{"lyrics"},
+		[]string{"track_id", "verse_text"},
+		pgx.CopyFromSlice(len(lyrics), func(i int) ([]any, error) {
+			return []any{trackID, lyrics[i]}, nil
+		}),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to insert lyrics: %w", err)
+	}
 
-	query := `
+	return nil
+}
+
+func (r *TracksRepository) CreateArtist(ctx context.Context, tx pgx.Tx, artist dao.Artist) (id int, err error) {
+	sql := `
 		INSERT INTO artists (name) VALUES ($1) RETURNING artist_id;`
 
-	if err = tx.QueryRow(ctx, query, artist.Name).Scan(&id); err != nil {
+	if err = tx.QueryRow(ctx, sql, artist.Name).Scan(&id); err != nil {
 		return 0, fmt.Errorf("failed to rows.Scan: %w", err)
 	}
 
@@ -87,10 +107,10 @@ func (r *TracksRepository) CreateTrack(ctx context.Context, tx pgx.Tx, track dao
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
-	query := `
+	sql := `
 		INSERT INTO tracks (title, artist_id, link, released_at) VALUES ($1, $2, $3, $4) RETURNING track_id;`
 
-	if err = tx.QueryRow(ctx, query, track.Title, track.ArtistID, track.Link, track.ReleasedAt).Scan(&id); err != nil {
+	if err = tx.QueryRow(ctx, sql, track.Title, track.ArtistID, track.Link, track.ReleasedAt).Scan(&id); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.ConstraintName == "tracks_title_artist_id_unique" {
 			return 0, domain.ErrTrackAlreadyExists
@@ -105,7 +125,7 @@ func (r *TracksRepository) IsTrackExists(ctx context.Context, track string, arti
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
-	query := `
+	sql := `
 		SELECT EXISTS(
 			SELECT 
 				1
@@ -115,7 +135,7 @@ func (r *TracksRepository) IsTrackExists(ctx context.Context, track string, arti
 				tracks.title = $1 AND artists.name = $2
 		);`
 
-	if err = r.db.QueryRow(ctx, query, track, artist).Scan(&exists); err != nil {
+	if err = r.db.QueryRow(ctx, sql, track, artist).Scan(&exists); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return true, nil
 		}
@@ -130,10 +150,10 @@ func (r *TracksRepository) IsArtistExists(ctx context.Context, tx pgx.Tx, name s
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
-	query := `
+	sql := `
 		SELECT artist_id FROM artists WHERE name = $1;`
 
-	if err := tx.QueryRow(ctx, query, name).Scan(&id); err != nil {
+	if err := tx.QueryRow(ctx, sql, name).Scan(&id); err != nil {
 		return 0, false
 	}
 
@@ -169,11 +189,21 @@ func (r *TracksRepository) GetByID(ctx context.Context, id int) (track entities.
 	return track, tx.Commit(ctx)
 }
 
+func (r *TracksRepository) GetArtistIDByTrackID(ctx context.Context, tx pgx.Tx, id int) (artistID int, err error) {
+	sql := `SELECT artist_id FROM tracks WHERE track_id = $1;`
+
+	if err = tx.QueryRow(ctx, sql, id).Scan(&artistID); err != nil {
+		return 0, fmt.Errorf("failed to tx.QueryRow: %w", err)
+	}
+
+	return artistID, nil
+}
+
 func (r *TracksRepository) GetTrack(ctx context.Context, tx pgx.Tx, id int) (track entities.Track, err error) {
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
-	query := `
+	sql := `
 		SELECT artists.name, tracks.title, tracks.link, tracks.released_at
 		FROM
 			tracks JOIN artists
@@ -181,7 +211,7 @@ func (r *TracksRepository) GetTrack(ctx context.Context, tx pgx.Tx, id int) (tra
 		WHERE
 			tracks.track_id = $1;`
 
-	if err = tx.QueryRow(ctx, query, id).Scan(
+	if err = tx.QueryRow(ctx, sql, id).Scan(
 		&track.Artist,
 		&track.Track,
 		&track.Link,
@@ -294,9 +324,9 @@ func (r *TracksRepository) GetTrackLyric(ctx context.Context, tx pgx.Tx, trackID
 	ctx, cancelFunc := context.WithTimeout(ctx, queryTimeout)
 	defer cancelFunc()
 
-	query := `SELECT verse_text FROM lyrics WHERE track_id = $1;`
+	sql := `SELECT verse_text FROM lyrics WHERE track_id = $1;`
 
-	rows, err := tx.Query(ctx, query, trackID)
+	rows, err := tx.Query(ctx, sql, trackID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to Query(%d): %w", trackID, err)
 	}
@@ -327,11 +357,11 @@ func (r *TracksRepository) GetLyricsByTrackIDs(ctx context.Context, tx pgx.Tx, i
 		args = append(args, id)
 	}
 
-	query := `SELECT track_id, verse_text FROM lyrics WHERE track_id in (`
-	query += strings.Join(params, ",")
-	query += ");"
+	sql := `SELECT track_id, verse_text FROM lyrics WHERE track_id in (`
+	sql += strings.Join(params, ",")
+	sql += ");"
 
-	rows, err := tx.Query(ctx, query, args...)
+	rows, err := tx.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to tx.Query: %w", err)
 	}
@@ -345,4 +375,81 @@ func (r *TracksRepository) GetLyricsByTrackIDs(ctx context.Context, tx pgx.Tx, i
 	}
 
 	return lyrics, nil
+}
+
+func (r *TracksRepository) UpdateArtist(ctx context.Context, tx pgx.Tx, artist dao.Artist) (err error) {
+	sql := `UPDATE artists SET name = $1 WHERE artist_id = $2;`
+
+	err = tx.QueryRow(ctx, sql, artist.Name, artist.ArtistID).Scan()
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return fmt.Errorf("failed to tx.QueryRow: %w", err)
+	}
+
+	return nil
+}
+
+func (r *TracksRepository) UpdateTrack(ctx context.Context, tx pgx.Tx, track dao.Track) (err error) {
+	var (
+		sqlBase strings.Builder
+		fields  []string
+		args    = []any{track.TrackID}
+		phIndex = 1
+	)
+
+	sqlBase.WriteString(`UPDATE tracks SET %s WHERE track_id = $1;`)
+
+	if track.Title != "" {
+		phIndex++
+		fields = append(fields, fmt.Sprintf("title = $%d", phIndex))
+		args = append(args, track.Title)
+	}
+	if track.Link != "" {
+		phIndex++
+		fields = append(fields, fmt.Sprintf("link = $%d", phIndex))
+		args = append(args, track.Link)
+	}
+	if !track.ReleasedAt.IsZero() {
+		phIndex++
+		fields = append(fields, fmt.Sprintf("released_at = $%d", phIndex))
+		args = append(args, track.ReleasedAt)
+	}
+	if len(fields) == 0 {
+		return errors.New("failed to build sql empty track")
+	}
+
+	sql := fmt.Sprintf(sqlBase.String(), strings.Join(fields, ","))
+
+	err = tx.QueryRow(ctx, sql, args...).Scan()
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return fmt.Errorf("failed to tx.QueryRow: %w", err)
+	}
+
+	return nil
+}
+
+func (r *TracksRepository) DeleteTrackByID(ctx context.Context, trackID int) (err error) {
+	sql := `DELETE FROM tracks WHERE track_id = $1;`
+
+	err = r.db.QueryRow(ctx, sql, trackID).Scan()
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return fmt.Errorf("failed to tx.QueryRow: %w", err)
+	}
+
+	return nil
+}
+
+func (r *TracksRepository) GetLyricPaginated(ctx context.Context, _ pgx.Tx, trackID int, offset int) (lyric dao.Lyric, err error) {
+	sql := `SELECT lyric_id, verse_text FROM lyrics WHERE track_id = $1 LIMIT 1 OFFSET $2;`
+
+	if err = r.db.QueryRow(ctx, sql, trackID, offset).Scan(
+		&lyric.LyricID,
+		&lyric.Verse,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return dao.Lyric{}, domain.ErrTrackLyricNotFound
+		}
+		return dao.Lyric{}, err
+	}
+
+	return lyric, nil
 }

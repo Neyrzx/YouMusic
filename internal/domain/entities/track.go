@@ -11,9 +11,23 @@ type Track struct {
 	Released time.Time
 }
 
+type TrackVerse struct {
+	OrderID int
+	Verse   string
+}
+
 type TrackCreate struct {
 	Title  string
 	Artist string
+}
+
+type TrackUpdate struct {
+	TrackID  int
+	Track    string
+	Artist   string
+	Lyric    string
+	Link     string
+	Released time.Time
 }
 
 type TrackGetListFilters struct {
