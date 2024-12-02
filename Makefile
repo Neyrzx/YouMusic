@@ -128,5 +128,5 @@ run-app:
 .PHONY: run
 
 run-migrate:
-	@go run ./cmd/migrate
+	@go run ./cmd/migration
 .PHONY: run
