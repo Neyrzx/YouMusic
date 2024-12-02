@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/neyrzx/youmusic/internal/domain/entities"
+	domain "github.com/neyrzx/youmusic/internal/domain/errors"
 )
 
 type TracksCreateRequest struct {
@@ -41,6 +43,9 @@ func (h *TracksHandlers) Create(c echo.Context) (err error) {
 		Artist: request.Group,
 	}); err != nil {
 		h.logger.Err(err).Msg("failed to trackService.Create")
+		if errors.Is(err, domain.ErrTrackAlreadyExists) {
+			return c.JSON(http.StatusBadRequest, HTTPError{Message: err.Error()})
+		}
 		return c.JSON(http.StatusInternalServerError, HTTPError{Message: "something went wrong, try again later"})
 	}
 

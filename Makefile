@@ -55,7 +55,7 @@ swagger:
 .PHONY: swagger
 
 # Установка всех зависимостей проекта, генерация swagger документации.
-init: swagger install
+init: install
 	@go mod tidy
 .PHONY: init
 
@@ -122,3 +122,11 @@ migration:
 	@read -p "Command: " cmd && \
 	${GOBIN_PROJECT_RELATIVE_PATH}/migrate -database $(MIGRATIONS_DB_URL) -path $(MIGRATIONS_DIR) $$cmd
 .PHONY: migration
+
+run-app:
+	@go run ./cmd/app
+.PHONY: run
+
+run-migrate:
+	@go run ./cmd/migrate
+.PHONY: run

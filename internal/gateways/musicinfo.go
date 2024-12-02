@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
 	"time"
 
 	"github.com/neyrzx/youmusic/internal/config"
@@ -37,7 +38,17 @@ func (gw *MusicInfoGateway) Info(ctx context.Context, track entities.TrackInfo) 
 	_, cancelFunc := context.WithTimeout(ctx, timeoutInfo)
 	defer cancelFunc()
 
-	path := fmt.Sprintf("%s/info/?song=%s&group=%s", gw.cfg.BaseURL, track.Song, track.Group)
+	url, err := url.Parse(fmt.Sprintf("%s/info", gw.cfg.BaseURL))
+	if err != nil {
+		return entities.TrackInfoResult{}, fmt.Errorf("failed url.Parse(%s/info): %w", gw.cfg.BaseURL, err)
+	}
+
+	query := url.Query()
+	query.Add("song", track.Song)
+	query.Add("group", track.Group)
+	url.RawQuery = query.Encode()
+	path := url.String()
+
 	data, err := gw.client.Get(ctx, path)
 	if err != nil {
 		return entities.TrackInfoResult{}, fmt.Errorf("failed to client.Get(%s): %w", path, err)
