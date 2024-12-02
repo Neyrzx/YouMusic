@@ -2,49 +2,50 @@ package v1
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/neyrzx/youmusic/internal/dtos"
+	"github.com/neyrzx/youmusic/internal/domain/entities"
+	"github.com/neyrzx/youmusic/pkg/logger"
+	"github.com/rs/zerolog"
+)
+
+const (
+	packageKey  = "handlers"
+	packageName = "tracks"
 )
 
 type TracksService interface {
-	Create(ctx context.Context, track dtos.TrackCreateDTO) error
+	Create(ctx context.Context, track entities.TrackCreate) error
+	GetByID(ctx context.Context, ID int) (entities.Track, error)
+	GetList(ctx context.Context, filters entities.TrackGetListFilters) ([]entities.Track, error)
+	Update(ctx context.Context, track entities.TrackUpdate) error
+	Delete(ctx context.Context, trackID int) error
+	GetLyric(ctx context.Context, trackID int, offset int) (entities.TrackVerse, error)
 }
 
 type TracksHandlers struct {
-	tc TracksService
+	trackService TracksService
+	logger       *zerolog.Logger
 }
 
-func NewTracksHandlers(g *echo.Group, tc TracksService) *TracksHandlers {
-	ctl := &TracksHandlers{tc: tc}
-	g.POST("/", ctl.Create)
-	return ctl
+func NewTracksHandlers(g *echo.Group, ts TracksService) *TracksHandlers {
+	logger := logger.DefaultLogger().With().Str(packageKey, packageName).Logger()
+
+	h := &TracksHandlers{
+		trackService: ts,
+		logger:       &logger,
+	}
+
+	g.POST("/", h.Create)
+	g.GET("/", h.List)
+	g.GET("/:id/", h.Retrieve)
+	g.PATCH("/:id/", h.Update)
+	g.DELETE("/:id/", h.Delete)
+	g.GET("/:id/lyric/", h.LyricRetrieve)
+
+	return h
 }
 
-type TracksCreateRequest struct {
-	Group string `json:"group" validate:"required"`
-	Song  string `json:"song" validate:"required"`
-}
-
-// TODO: Возвращать ошибки в более читаемом формате, т.к. сырые ошибки валидации имеют избыточные данные.
-func (ctl *TracksHandlers) Create(c echo.Context) (err error) {
-	var request TracksCreateRequest
-
-	if err = c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"message": "request body malformed"})
-	}
-
-	if err = c.Validate(request); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, err)
-	}
-
-	if err = ctl.tc.Create(c.Request().Context(), dtos.TrackCreateDTO{
-		Title:  request.Song,
-		Artist: request.Group,
-	}); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
-	}
-
-	return c.NoContent(http.StatusCreated)
+type HTTPError struct {
+	Message string `json:"message"`
 }

@@ -4,25 +4,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"io"
 	"time"
 
-	"github.com/neyrzx/youmusic/internal/dtos"
+	"github.com/neyrzx/youmusic/internal/config"
+	"github.com/neyrzx/youmusic/internal/domain/entities"
 	"github.com/neyrzx/youmusic/pkg/utils"
 )
 
 const timeoutInfo = 15 * time.Second
 
 type Client interface {
-	Get(string) (*http.Response, error)
+	Get(context.Context, string) (io.ReadCloser, error)
 }
 
 type MusicInfoGateway struct {
 	client Client
+	cfg    config.GatewayHTTPClient
 }
 
-func NewMusicInfoGateway(client Client) *MusicInfoGateway {
-	return &MusicInfoGateway{client: client}
+func NewMusicInfoGateway(client Client, cfg config.GatewayHTTPClient) *MusicInfoGateway {
+	return &MusicInfoGateway{client: client, cfg: cfg}
 }
 
 type InfoResponse struct {
@@ -31,23 +33,23 @@ type InfoResponse struct {
 	Link        string            `json:"link"`
 }
 
-func (gw *MusicInfoGateway) Info(ctx context.Context, track dtos.TrackInfoDTO) (*dtos.TrackInfoResultDTO, error) {
+func (gw *MusicInfoGateway) Info(ctx context.Context, track entities.TrackInfo) (entities.TrackInfoResult, error) {
 	_, cancelFunc := context.WithTimeout(ctx, timeoutInfo)
 	defer cancelFunc()
 
-	path := fmt.Sprintf("/info?song=%s&group=%s", track.Song, track.Group)
-	res, err := gw.client.Get(path)
+	path := fmt.Sprintf("%s/info/?song=%s&group=%s", gw.cfg.BaseURL, track.Song, track.Group)
+	data, err := gw.client.Get(ctx, path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to client.Get(%s): %w", path, err)
+		return entities.TrackInfoResult{}, fmt.Errorf("failed to client.Get(%s): %w", path, err)
 	}
-	defer res.Body.Close()
+	defer data.Close()
 
 	var response InfoResponse
-	if err = json.NewDecoder(res.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("failed to json.Decode(): %w", err)
+	if err = json.NewDecoder(data).Decode(&response); err != nil {
+		return entities.TrackInfoResult{}, fmt.Errorf("failed to json.Decode(): %w", err)
 	}
 
-	return &dtos.TrackInfoResultDTO{
+	return entities.TrackInfoResult{
 		ReleaseDate: time.Time(response.ReleaseDate),
 		Text:        response.Text,
 		Link:        response.Link,

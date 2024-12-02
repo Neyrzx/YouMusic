@@ -5,7 +5,7 @@ GOBIN_PROJECT_RELATIVE_PATH=bin
 GOBIN_PROJECT_ABSOLUTE_PATH=$(CURDIR)/${GOBIN_PROJECT_RELATIVE_PATH}
 
 # Tools versions
-VERSION_SWAG = v1.4.1
+VERSION_SWAG = latest
 VERSION_GOLANGCI_LINT = v1.62.0
 VERSION_MIGRATE = v4.18.1
 VERSION_MOCKERY = v2.49.1
@@ -49,10 +49,9 @@ install: install-migrate-cli install-golangcilint-cli install-swag-cli install-m
 .PHONY: install
 
 # Генерация swagger спецификации
-swagger: export GOBIN=${GOBIN_PROJECT_ABSOLUTE_PATH}
 swagger:
 	@echo Generating Swagger Docs...
-	@swag init -g internal/delivery/rest/api.go
+	@${GOBIN_PROJECT_ABSOLUTE_PATH}/swag init -g internal/delivery/rest/api.go
 .PHONY: swagger
 
 # Установка всех зависимостей проекта, генерация swagger документации.

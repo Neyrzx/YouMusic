@@ -3,12 +3,52 @@ package config
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"strconv"
+	"time"
 )
 
+type RunningMode string
+
+const (
+	ModeLocal       RunningMode = "local"
+	ModeDevelopment RunningMode = "developent"
+	ModeProduction  RunningMode = "production"
+)
+
+func GetCurrentRunningMode() RunningMode {
+	switch RunningMode(os.Getenv("ENVIRONMENT")) {
+	case ModeLocal:
+		return ModeLocal
+	case ModeDevelopment:
+		return ModeDevelopment
+	case ModeProduction:
+		return ModeProduction
+	default:
+		return ModeLocal
+	}
+}
+
 type App struct {
+	Environment      string `env:"ENVIRONMENT"`
 	MigrationsSource string `env:"MIGRATIONS_SOURCE"`
+	SwaggerDocPath   string `env:"SWAGGER_DOC_PATH"`
+	Server           Server
+	GatewayMusicInfo GatewayHTTPClient
 	Database         Database
+}
+
+type Server struct {
+	ServerAddr               string        `env:"SERVER_ADDR"`
+	GracefulShoutdownTimeout time.Duration `env:"GRACEFUL_SHUTDOWN_TIMEOUT"`
+}
+
+type GatewayHTTPClient struct {
+	RetryStratagyDelay       time.Duration `env:"GATEWAY_RETRY_STRATAGY_DELAY"`
+	RetryStrategyMaxDelay    time.Duration `env:"GATEWAY_RETRY_STRATAGY_MAX_DELAY"`
+	RetryStrategyMaxDuration time.Duration `env:"GATEWAY_RETRY_STRATAGY_MAX_DURATION"`
+	RetryStrategyFactor      float64       `env:"GATEWAY_RETRY_STRATAGY_FACTOR"`
+	BaseURL                  string        `env:"GATEWAY_MUSIC_INFO_BASE_URL"`
 }
 
 // Database представляет собой конфигурацию соединений с базой данных, основанную на переменных окружения.

@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	dtos "github.com/neyrzx/youmusic/internal/dtos"
+	entities "github.com/neyrzx/youmusic/internal/domain/entities"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -23,25 +23,25 @@ func (_m *MockTracksInfoGateway) EXPECT() *MockTracksInfoGateway_Expecter {
 }
 
 // Info provides a mock function with given fields: ctx, track
-func (_m *MockTracksInfoGateway) Info(ctx context.Context, track dtos.TrackInfoDTO) (dtos.TrackInfoResultDTO, error) {
+func (_m *MockTracksInfoGateway) Info(ctx context.Context, track entities.TrackInfo) (entities.TrackInfoResult, error) {
 	ret := _m.Called(ctx, track)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Info")
 	}
 
-	var r0 dtos.TrackInfoResultDTO
+	var r0 entities.TrackInfoResult
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, dtos.TrackInfoDTO) (dtos.TrackInfoResultDTO, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.TrackInfo) (entities.TrackInfoResult, error)); ok {
 		return rf(ctx, track)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, dtos.TrackInfoDTO) dtos.TrackInfoResultDTO); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.TrackInfo) entities.TrackInfoResult); ok {
 		r0 = rf(ctx, track)
 	} else {
-		r0 = ret.Get(0).(dtos.TrackInfoResultDTO)
+		r0 = ret.Get(0).(entities.TrackInfoResult)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, dtos.TrackInfoDTO) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, entities.TrackInfo) error); ok {
 		r1 = rf(ctx, track)
 	} else {
 		r1 = ret.Error(1)
@@ -57,24 +57,24 @@ type MockTracksInfoGateway_Info_Call struct {
 
 // Info is a helper method to define mock.On call
 //   - ctx context.Context
-//   - track dtos.TrackInfoDTO
+//   - track entities.TrackInfo
 func (_e *MockTracksInfoGateway_Expecter) Info(ctx interface{}, track interface{}) *MockTracksInfoGateway_Info_Call {
 	return &MockTracksInfoGateway_Info_Call{Call: _e.mock.On("Info", ctx, track)}
 }
 
-func (_c *MockTracksInfoGateway_Info_Call) Run(run func(ctx context.Context, track dtos.TrackInfoDTO)) *MockTracksInfoGateway_Info_Call {
+func (_c *MockTracksInfoGateway_Info_Call) Run(run func(ctx context.Context, track entities.TrackInfo)) *MockTracksInfoGateway_Info_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(dtos.TrackInfoDTO))
+		run(args[0].(context.Context), args[1].(entities.TrackInfo))
 	})
 	return _c
 }
 
-func (_c *MockTracksInfoGateway_Info_Call) Return(_a0 dtos.TrackInfoResultDTO, _a1 error) *MockTracksInfoGateway_Info_Call {
+func (_c *MockTracksInfoGateway_Info_Call) Return(_a0 entities.TrackInfoResult, _a1 error) *MockTracksInfoGateway_Info_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockTracksInfoGateway_Info_Call) RunAndReturn(run func(context.Context, dtos.TrackInfoDTO) (dtos.TrackInfoResultDTO, error)) *MockTracksInfoGateway_Info_Call {
+func (_c *MockTracksInfoGateway_Info_Call) RunAndReturn(run func(context.Context, entities.TrackInfo) (entities.TrackInfoResult, error)) *MockTracksInfoGateway_Info_Call {
 	_c.Call.Return(run)
 	return _c
 }

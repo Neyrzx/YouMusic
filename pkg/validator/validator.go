@@ -2,14 +2,13 @@ package validator
 
 import (
 	"errors"
-	"log"
-	"net/http"
+	"fmt"
+	"strings"
 
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
-	"github.com/labstack/echo/v4"
 )
 
 type Validator struct {
@@ -17,52 +16,50 @@ type Validator struct {
 	translator ut.Translator
 }
 
-func NewValidator() *Validator {
-	tagsDescribes := map[string]string{
-		"required": "field is required",
-	}
-
+func NewValidator() (*Validator, error) {
 	uni := ut.New(en.New(), en.New())
+	v := &Validator{}
 
 	trans, _ := uni.GetTranslator("en")
-	validate := validator.New()
+	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	if err := en_translations.RegisterDefaultTranslations(validate, trans); err != nil {
-		log.Printf("failed to en_translations.RegisterDefaultTranslations(): %s", err.Error())
+		return nil, fmt.Errorf("failed to translations.RegisterDefaultTranslations: %w", err)
 	}
 
-	for tag, descibe := range tagsDescribes {
-		err := validate.RegisterTranslation(tag, trans, func(ut ut.Translator) error {
-			return ut.Add(tag, descibe, true)
-		}, func(ut ut.Translator, fe validator.FieldError) string {
-			t, _ := ut.T(tag, fe.Field())
-			return t
-		})
+	v.validator = validate
+	v.translator = trans
 
-		if err != nil {
-			log.Printf("failed to validate.RegisterTranslation(%s, ...): %s", tag, err.Error())
-		}
-	}
+	return v, nil
+}
 
-	return &Validator{
-		validator:  validate,
-		translator: trans,
+type CustomValidationError struct {
+	Message map[string]string `json:"message"`
+}
+
+func NewCustomValidationError() *CustomValidationError {
+	return &CustomValidationError{
+		Message: make(map[string]string),
 	}
+}
+
+func (e CustomValidationError) Error() string {
+	return fmt.Sprintf("%v", e.Message)
 }
 
 func (v *Validator) Validate(i any) (err error) {
 	if err = v.validator.Struct(i); err != nil {
-		var vErr validator.ValidationErrors
-		var ivErr *validator.InvalidValidationError
+		var vErrs validator.ValidationErrors
 
-		switch {
-		case errors.As(err, &vErr):
-			return echo.NewHTTPError(http.StatusUnprocessableEntity, vErr.Translate(v.translator))
-		case errors.As(err, &ivErr):
-			return err
-		default:
-			return err
+		ve := NewCustomValidationError()
+		if errors.As(err, &vErrs) {
+			for _, e := range vErrs {
+				ve.Message[strings.ToLower(e.Field())] = e.Translate(v.translator)
+			}
+			return ve
 		}
+
+		return err
 	}
 
 	return nil

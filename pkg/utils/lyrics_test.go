@@ -23,10 +23,8 @@ func TestSplitLyricsToVerses(t *testing.T) {
 		},
 		{
 			"case: #3",
-			//nolint:lll
 			"Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight  ",
 			[]string{
-				//nolint:lll
 				"Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?",
 				"Ooh\nYou set my soul alight\nOoh\nYou set my soul alight",
 			},

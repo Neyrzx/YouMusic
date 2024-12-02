@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	dtos "github.com/neyrzx/youmusic/internal/dtos"
+	entities "github.com/neyrzx/youmusic/internal/domain/entities"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -23,7 +23,7 @@ func (_m *MockTracksService) EXPECT() *MockTracksService_Expecter {
 }
 
 // Create provides a mock function with given fields: ctx, track
-func (_m *MockTracksService) Create(ctx context.Context, track dtos.TrackCreateDTO) error {
+func (_m *MockTracksService) Create(ctx context.Context, track entities.TrackCreate) error {
 	ret := _m.Called(ctx, track)
 
 	if len(ret) == 0 {
@@ -31,7 +31,7 @@ func (_m *MockTracksService) Create(ctx context.Context, track dtos.TrackCreateD
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, dtos.TrackCreateDTO) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, entities.TrackCreate) error); ok {
 		r0 = rf(ctx, track)
 	} else {
 		r0 = ret.Error(0)
@@ -47,14 +47,14 @@ type MockTracksService_Create_Call struct {
 
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
-//   - track dtos.TrackCreateDTO
+//   - track entities.TrackCreate
 func (_e *MockTracksService_Expecter) Create(ctx interface{}, track interface{}) *MockTracksService_Create_Call {
 	return &MockTracksService_Create_Call{Call: _e.mock.On("Create", ctx, track)}
 }
 
-func (_c *MockTracksService_Create_Call) Run(run func(ctx context.Context, track dtos.TrackCreateDTO)) *MockTracksService_Create_Call {
+func (_c *MockTracksService_Create_Call) Run(run func(ctx context.Context, track entities.TrackCreate)) *MockTracksService_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(dtos.TrackCreateDTO))
+		run(args[0].(context.Context), args[1].(entities.TrackCreate))
 	})
 	return _c
 }
@@ -64,7 +64,275 @@ func (_c *MockTracksService_Create_Call) Return(_a0 error) *MockTracksService_Cr
 	return _c
 }
 
-func (_c *MockTracksService_Create_Call) RunAndReturn(run func(context.Context, dtos.TrackCreateDTO) error) *MockTracksService_Create_Call {
+func (_c *MockTracksService_Create_Call) RunAndReturn(run func(context.Context, entities.TrackCreate) error) *MockTracksService_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function with given fields: ctx, trackID
+func (_m *MockTracksService) Delete(ctx context.Context, trackID int) error {
+	ret := _m.Called(ctx, trackID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, trackID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockTracksService_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockTracksService_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - trackID int
+func (_e *MockTracksService_Expecter) Delete(ctx interface{}, trackID interface{}) *MockTracksService_Delete_Call {
+	return &MockTracksService_Delete_Call{Call: _e.mock.On("Delete", ctx, trackID)}
+}
+
+func (_c *MockTracksService_Delete_Call) Run(run func(ctx context.Context, trackID int)) *MockTracksService_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int))
+	})
+	return _c
+}
+
+func (_c *MockTracksService_Delete_Call) Return(_a0 error) *MockTracksService_Delete_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockTracksService_Delete_Call) RunAndReturn(run func(context.Context, int) error) *MockTracksService_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetByID provides a mock function with given fields: ctx, ID
+func (_m *MockTracksService) GetByID(ctx context.Context, ID int) (entities.Track, error) {
+	ret := _m.Called(ctx, ID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 entities.Track
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) (entities.Track, error)); ok {
+		return rf(ctx, ID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int) entities.Track); ok {
+		r0 = rf(ctx, ID)
+	} else {
+		r0 = ret.Get(0).(entities.Track)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, ID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockTracksService_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type MockTracksService_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ID int
+func (_e *MockTracksService_Expecter) GetByID(ctx interface{}, ID interface{}) *MockTracksService_GetByID_Call {
+	return &MockTracksService_GetByID_Call{Call: _e.mock.On("GetByID", ctx, ID)}
+}
+
+func (_c *MockTracksService_GetByID_Call) Run(run func(ctx context.Context, ID int)) *MockTracksService_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int))
+	})
+	return _c
+}
+
+func (_c *MockTracksService_GetByID_Call) Return(_a0 entities.Track, _a1 error) *MockTracksService_GetByID_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockTracksService_GetByID_Call) RunAndReturn(run func(context.Context, int) (entities.Track, error)) *MockTracksService_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetList provides a mock function with given fields: ctx, filters
+func (_m *MockTracksService) GetList(ctx context.Context, filters entities.TrackGetListFilters) ([]entities.Track, error) {
+	ret := _m.Called(ctx, filters)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetList")
+	}
+
+	var r0 []entities.Track
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, entities.TrackGetListFilters) ([]entities.Track, error)); ok {
+		return rf(ctx, filters)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, entities.TrackGetListFilters) []entities.Track); ok {
+		r0 = rf(ctx, filters)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]entities.Track)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, entities.TrackGetListFilters) error); ok {
+		r1 = rf(ctx, filters)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockTracksService_GetList_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetList'
+type MockTracksService_GetList_Call struct {
+	*mock.Call
+}
+
+// GetList is a helper method to define mock.On call
+//   - ctx context.Context
+//   - filters entities.TrackGetListFilters
+func (_e *MockTracksService_Expecter) GetList(ctx interface{}, filters interface{}) *MockTracksService_GetList_Call {
+	return &MockTracksService_GetList_Call{Call: _e.mock.On("GetList", ctx, filters)}
+}
+
+func (_c *MockTracksService_GetList_Call) Run(run func(ctx context.Context, filters entities.TrackGetListFilters)) *MockTracksService_GetList_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(entities.TrackGetListFilters))
+	})
+	return _c
+}
+
+func (_c *MockTracksService_GetList_Call) Return(_a0 []entities.Track, _a1 error) *MockTracksService_GetList_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockTracksService_GetList_Call) RunAndReturn(run func(context.Context, entities.TrackGetListFilters) ([]entities.Track, error)) *MockTracksService_GetList_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetLyric provides a mock function with given fields: ctx, trackID, offset
+func (_m *MockTracksService) GetLyric(ctx context.Context, trackID int, offset int) (entities.TrackVerse, error) {
+	ret := _m.Called(ctx, trackID, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetLyric")
+	}
+
+	var r0 entities.TrackVerse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) (entities.TrackVerse, error)); ok {
+		return rf(ctx, trackID, offset)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) entities.TrackVerse); ok {
+		r0 = rf(ctx, trackID, offset)
+	} else {
+		r0 = ret.Get(0).(entities.TrackVerse)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int, int) error); ok {
+		r1 = rf(ctx, trackID, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockTracksService_GetLyric_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetLyric'
+type MockTracksService_GetLyric_Call struct {
+	*mock.Call
+}
+
+// GetLyric is a helper method to define mock.On call
+//   - ctx context.Context
+//   - trackID int
+//   - offset int
+func (_e *MockTracksService_Expecter) GetLyric(ctx interface{}, trackID interface{}, offset interface{}) *MockTracksService_GetLyric_Call {
+	return &MockTracksService_GetLyric_Call{Call: _e.mock.On("GetLyric", ctx, trackID, offset)}
+}
+
+func (_c *MockTracksService_GetLyric_Call) Run(run func(ctx context.Context, trackID int, offset int)) *MockTracksService_GetLyric_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *MockTracksService_GetLyric_Call) Return(_a0 entities.TrackVerse, _a1 error) *MockTracksService_GetLyric_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockTracksService_GetLyric_Call) RunAndReturn(run func(context.Context, int, int) (entities.TrackVerse, error)) *MockTracksService_GetLyric_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function with given fields: ctx, track
+func (_m *MockTracksService) Update(ctx context.Context, track entities.TrackUpdate) error {
+	ret := _m.Called(ctx, track)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, entities.TrackUpdate) error); ok {
+		r0 = rf(ctx, track)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockTracksService_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockTracksService_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - track entities.TrackUpdate
+func (_e *MockTracksService_Expecter) Update(ctx interface{}, track interface{}) *MockTracksService_Update_Call {
+	return &MockTracksService_Update_Call{Call: _e.mock.On("Update", ctx, track)}
+}
+
+func (_c *MockTracksService_Update_Call) Run(run func(ctx context.Context, track entities.TrackUpdate)) *MockTracksService_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(entities.TrackUpdate))
+	})
+	return _c
+}
+
+func (_c *MockTracksService_Update_Call) Return(_a0 error) *MockTracksService_Update_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockTracksService_Update_Call) RunAndReturn(run func(context.Context, entities.TrackUpdate) error) *MockTracksService_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }
