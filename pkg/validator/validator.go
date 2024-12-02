@@ -3,7 +3,6 @@ package validator
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/go-playground/locales/en"
@@ -17,38 +16,21 @@ type Validator struct {
 	translator ut.Translator
 }
 
-func NewValidator() *Validator {
-	tagsDescribes := map[string]string{
-		"required": "field is required",
-	}
-
+func NewValidator() (*Validator, error) {
 	uni := ut.New(en.New(), en.New())
+	v := &Validator{}
 
 	trans, _ := uni.GetTranslator("en")
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	if err := en_translations.RegisterDefaultTranslations(validate, trans); err != nil {
-		log.Printf("failed to en_translations.RegisterDefaultTranslations(): %s", err.Error())
+		return nil, fmt.Errorf("failed to translations.RegisterDefaultTranslations: %w", err)
 	}
 
-	for tag, descibe := range tagsDescribes {
-		err := validate.RegisterTranslation(tag, trans, func(ut ut.Translator) error {
-			return ut.Add(tag, descibe, true)
-		}, func(ut ut.Translator, fe validator.FieldError) string {
-			t, _ := ut.T(tag, fe.Field())
+	v.validator = validate
+	v.translator = trans
 
-			return t
-		})
-
-		if err != nil {
-			log.Printf("failed to validate.RegisterTranslation(%s, ...): %s", tag, err.Error())
-		}
-	}
-
-	return &Validator{
-		validator:  validate,
-		translator: trans,
-	}
+	return v, nil
 }
 
 type CustomValidationError struct {

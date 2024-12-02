@@ -34,7 +34,7 @@ type App struct {
 	MigrationsSource string `env:"MIGRATIONS_SOURCE"`
 	SwaggerDocPath   string `env:"SWAGGER_DOC_PATH"`
 	Server           Server
-	MusicInfo        MusicInfoGateway
+	GatewayMusicInfo GatewayHTTPClient
 	Database         Database
 }
 
@@ -43,9 +43,12 @@ type Server struct {
 	GracefulShoutdownTimeout time.Duration `env:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 }
 
-type MusicInfoGateway struct {
-	URL   string `env:"MUSIC_INFO_URL"`
-	Route string `env:"MUSIC_INFO_ROUTE"`
+type GatewayHTTPClient struct {
+	RetryStratagyDelay       time.Duration `env:"GATEWAY_RETRY_STRATAGY_DELAY"`
+	RetryStrategyMaxDelay    time.Duration `env:"GATEWAY_RETRY_STRATAGY_MAX_DELAY"`
+	RetryStrategyMaxDuration time.Duration `env:"GATEWAY_RETRY_STRATAGY_MAX_DURATION"`
+	RetryStrategyFactor      float64       `env:"GATEWAY_RETRY_STRATAGY_FACTOR"`
+	BaseURL                  string        `env:"GATEWAY_MUSIC_INFO_BASE_URL"`
 }
 
 // Database представляет собой конфигурацию соединений с базой данных, основанную на переменных окружения.

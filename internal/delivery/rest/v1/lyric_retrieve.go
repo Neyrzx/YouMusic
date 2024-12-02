@@ -35,22 +35,21 @@ func (h *TracksHandlers) LyricRetrieve(c echo.Context) (err error) {
 	var request TrackLyricParams
 
 	if err = c.Bind(&request); err != nil {
-		c.Logger().Errorf("failed to Bind: %s", err.Error())
+		h.logger.Err(err).Msg("failed to c.Bind")
 		return c.JSON(http.StatusBadRequest, HTTPError{Message: "request body malformed"})
 	}
 
 	if err = c.Validate(request); err != nil {
-		c.Logger().Errorf("failed to Validate: %s", err.Error())
+		h.logger.Err(err).Msg("failed to c.Validate")
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
 	verse, err := h.trackService.GetLyric(c.Request().Context(), request.TrackID, request.Offset)
 	if err != nil {
-		c.Logger().Errorf("failed to trackService.GetLyric(trackID: %d, offset: %d): %s",
-			request.TrackID,
-			request.Offset,
-			err.Error(),
-		)
+		h.logger.Err(err).
+			Int("trackID", request.TrackID).
+			Int("offset", request.Offset).
+			Msg("failed to trackService.GetLyric")
 
 		if errors.Is(err, domain.ErrTrackLyricNotFound) {
 			return c.JSON(http.StatusNotFound, HTTPError{Message: domain.ErrTrackLyricNotFound.Error()})

@@ -132,6 +132,55 @@ func (_c *MockTracksRepository_CreateLyric_Call) RunAndReturn(run func(context.C
 	return _c
 }
 
+// CreateLyricFromSlice provides a mock function with given fields: ctx, tx, trackID, lyrics
+func (_m *MockTracksRepository) CreateLyricFromSlice(ctx context.Context, tx pgx.Tx, trackID int, lyrics []string) error {
+	ret := _m.Called(ctx, tx, trackID, lyrics)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateLyricFromSlice")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, pgx.Tx, int, []string) error); ok {
+		r0 = rf(ctx, tx, trackID, lyrics)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockTracksRepository_CreateLyricFromSlice_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateLyricFromSlice'
+type MockTracksRepository_CreateLyricFromSlice_Call struct {
+	*mock.Call
+}
+
+// CreateLyricFromSlice is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx pgx.Tx
+//   - trackID int
+//   - lyrics []string
+func (_e *MockTracksRepository_Expecter) CreateLyricFromSlice(ctx interface{}, tx interface{}, trackID interface{}, lyrics interface{}) *MockTracksRepository_CreateLyricFromSlice_Call {
+	return &MockTracksRepository_CreateLyricFromSlice_Call{Call: _e.mock.On("CreateLyricFromSlice", ctx, tx, trackID, lyrics)}
+}
+
+func (_c *MockTracksRepository_CreateLyricFromSlice_Call) Run(run func(ctx context.Context, tx pgx.Tx, trackID int, lyrics []string)) *MockTracksRepository_CreateLyricFromSlice_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(pgx.Tx), args[2].(int), args[3].([]string))
+	})
+	return _c
+}
+
+func (_c *MockTracksRepository_CreateLyricFromSlice_Call) Return(err error) *MockTracksRepository_CreateLyricFromSlice_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockTracksRepository_CreateLyricFromSlice_Call) RunAndReturn(run func(context.Context, pgx.Tx, int, []string) error) *MockTracksRepository_CreateLyricFromSlice_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateTrack provides a mock function with given fields: ctx, tx, track
 func (_m *MockTracksRepository) CreateTrack(ctx context.Context, tx pgx.Tx, track dao.Track) (int, error) {
 	ret := _m.Called(ctx, tx, track)
@@ -190,6 +239,159 @@ func (_c *MockTracksRepository_CreateTrack_Call) RunAndReturn(run func(context.C
 	return _c
 }
 
+// DeleteLyricByTrackID provides a mock function with given fields: ctx, tx, trackID
+func (_m *MockTracksRepository) DeleteLyricByTrackID(ctx context.Context, tx pgx.Tx, trackID int) error {
+	ret := _m.Called(ctx, tx, trackID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteLyricByTrackID")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, pgx.Tx, int) error); ok {
+		r0 = rf(ctx, tx, trackID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockTracksRepository_DeleteLyricByTrackID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteLyricByTrackID'
+type MockTracksRepository_DeleteLyricByTrackID_Call struct {
+	*mock.Call
+}
+
+// DeleteLyricByTrackID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx pgx.Tx
+//   - trackID int
+func (_e *MockTracksRepository_Expecter) DeleteLyricByTrackID(ctx interface{}, tx interface{}, trackID interface{}) *MockTracksRepository_DeleteLyricByTrackID_Call {
+	return &MockTracksRepository_DeleteLyricByTrackID_Call{Call: _e.mock.On("DeleteLyricByTrackID", ctx, tx, trackID)}
+}
+
+func (_c *MockTracksRepository_DeleteLyricByTrackID_Call) Run(run func(ctx context.Context, tx pgx.Tx, trackID int)) *MockTracksRepository_DeleteLyricByTrackID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(pgx.Tx), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *MockTracksRepository_DeleteLyricByTrackID_Call) Return(err error) *MockTracksRepository_DeleteLyricByTrackID_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockTracksRepository_DeleteLyricByTrackID_Call) RunAndReturn(run func(context.Context, pgx.Tx, int) error) *MockTracksRepository_DeleteLyricByTrackID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteTrackByID provides a mock function with given fields: ctx, trackID
+func (_m *MockTracksRepository) DeleteTrackByID(ctx context.Context, trackID int) error {
+	ret := _m.Called(ctx, trackID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteTrackByID")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, trackID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockTracksRepository_DeleteTrackByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteTrackByID'
+type MockTracksRepository_DeleteTrackByID_Call struct {
+	*mock.Call
+}
+
+// DeleteTrackByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - trackID int
+func (_e *MockTracksRepository_Expecter) DeleteTrackByID(ctx interface{}, trackID interface{}) *MockTracksRepository_DeleteTrackByID_Call {
+	return &MockTracksRepository_DeleteTrackByID_Call{Call: _e.mock.On("DeleteTrackByID", ctx, trackID)}
+}
+
+func (_c *MockTracksRepository_DeleteTrackByID_Call) Run(run func(ctx context.Context, trackID int)) *MockTracksRepository_DeleteTrackByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int))
+	})
+	return _c
+}
+
+func (_c *MockTracksRepository_DeleteTrackByID_Call) Return(err error) *MockTracksRepository_DeleteTrackByID_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockTracksRepository_DeleteTrackByID_Call) RunAndReturn(run func(context.Context, int) error) *MockTracksRepository_DeleteTrackByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetArtistIDByTrackID provides a mock function with given fields: ctx, tx, id
+func (_m *MockTracksRepository) GetArtistIDByTrackID(ctx context.Context, tx pgx.Tx, id int) (int, error) {
+	ret := _m.Called(ctx, tx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetArtistIDByTrackID")
+	}
+
+	var r0 int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, pgx.Tx, int) (int, error)); ok {
+		return rf(ctx, tx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, pgx.Tx, int) int); ok {
+		r0 = rf(ctx, tx, id)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, pgx.Tx, int) error); ok {
+		r1 = rf(ctx, tx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockTracksRepository_GetArtistIDByTrackID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetArtistIDByTrackID'
+type MockTracksRepository_GetArtistIDByTrackID_Call struct {
+	*mock.Call
+}
+
+// GetArtistIDByTrackID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx pgx.Tx
+//   - id int
+func (_e *MockTracksRepository_Expecter) GetArtistIDByTrackID(ctx interface{}, tx interface{}, id interface{}) *MockTracksRepository_GetArtistIDByTrackID_Call {
+	return &MockTracksRepository_GetArtistIDByTrackID_Call{Call: _e.mock.On("GetArtistIDByTrackID", ctx, tx, id)}
+}
+
+func (_c *MockTracksRepository_GetArtistIDByTrackID_Call) Run(run func(ctx context.Context, tx pgx.Tx, id int)) *MockTracksRepository_GetArtistIDByTrackID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(pgx.Tx), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *MockTracksRepository_GetArtistIDByTrackID_Call) Return(artistID int, err error) *MockTracksRepository_GetArtistIDByTrackID_Call {
+	_c.Call.Return(artistID, err)
+	return _c
+}
+
+func (_c *MockTracksRepository_GetArtistIDByTrackID_Call) RunAndReturn(run func(context.Context, pgx.Tx, int) (int, error)) *MockTracksRepository_GetArtistIDByTrackID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function with given fields: ctx, ID
 func (_m *MockTracksRepository) GetByID(ctx context.Context, ID int) (entities.Track, error) {
 	ret := _m.Called(ctx, ID)
@@ -243,6 +445,65 @@ func (_c *MockTracksRepository_GetByID_Call) Return(_a0 entities.Track, _a1 erro
 }
 
 func (_c *MockTracksRepository_GetByID_Call) RunAndReturn(run func(context.Context, int) (entities.Track, error)) *MockTracksRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetLyricPaginated provides a mock function with given fields: ctx, tx, trackID, offset
+func (_m *MockTracksRepository) GetLyricPaginated(ctx context.Context, tx pgx.Tx, trackID int, offset int) (dao.Lyric, error) {
+	ret := _m.Called(ctx, tx, trackID, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetLyricPaginated")
+	}
+
+	var r0 dao.Lyric
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, pgx.Tx, int, int) (dao.Lyric, error)); ok {
+		return rf(ctx, tx, trackID, offset)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, pgx.Tx, int, int) dao.Lyric); ok {
+		r0 = rf(ctx, tx, trackID, offset)
+	} else {
+		r0 = ret.Get(0).(dao.Lyric)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, pgx.Tx, int, int) error); ok {
+		r1 = rf(ctx, tx, trackID, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockTracksRepository_GetLyricPaginated_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetLyricPaginated'
+type MockTracksRepository_GetLyricPaginated_Call struct {
+	*mock.Call
+}
+
+// GetLyricPaginated is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx pgx.Tx
+//   - trackID int
+//   - offset int
+func (_e *MockTracksRepository_Expecter) GetLyricPaginated(ctx interface{}, tx interface{}, trackID interface{}, offset interface{}) *MockTracksRepository_GetLyricPaginated_Call {
+	return &MockTracksRepository_GetLyricPaginated_Call{Call: _e.mock.On("GetLyricPaginated", ctx, tx, trackID, offset)}
+}
+
+func (_c *MockTracksRepository_GetLyricPaginated_Call) Run(run func(ctx context.Context, tx pgx.Tx, trackID int, offset int)) *MockTracksRepository_GetLyricPaginated_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(pgx.Tx), args[2].(int), args[3].(int))
+	})
+	return _c
+}
+
+func (_c *MockTracksRepository_GetLyricPaginated_Call) Return(lyric dao.Lyric, err error) *MockTracksRepository_GetLyricPaginated_Call {
+	_c.Call.Return(lyric, err)
+	return _c
+}
+
+func (_c *MockTracksRepository_GetLyricPaginated_Call) RunAndReturn(run func(context.Context, pgx.Tx, int, int) (dao.Lyric, error)) *MockTracksRepository_GetLyricPaginated_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -521,60 +782,12 @@ func (_c *MockTracksRepository_UpdateArtist_Call) Run(run func(ctx context.Conte
 	return _c
 }
 
-func (_c *MockTracksRepository_UpdateArtist_Call) Return(_a0 error) *MockTracksRepository_UpdateArtist_Call {
-	_c.Call.Return(_a0)
+func (_c *MockTracksRepository_UpdateArtist_Call) Return(err error) *MockTracksRepository_UpdateArtist_Call {
+	_c.Call.Return(err)
 	return _c
 }
 
 func (_c *MockTracksRepository_UpdateArtist_Call) RunAndReturn(run func(context.Context, pgx.Tx, dao.Artist) error) *MockTracksRepository_UpdateArtist_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// UpdateLyric provides a mock function with given fields: ctx, tx, lyrics
-func (_m *MockTracksRepository) UpdateLyric(ctx context.Context, tx pgx.Tx, lyrics []dao.Lyric) error {
-	ret := _m.Called(ctx, tx, lyrics)
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateLyric")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, pgx.Tx, []dao.Lyric) error); ok {
-		r0 = rf(ctx, tx, lyrics)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// MockTracksRepository_UpdateLyric_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateLyric'
-type MockTracksRepository_UpdateLyric_Call struct {
-	*mock.Call
-}
-
-// UpdateLyric is a helper method to define mock.On call
-//   - ctx context.Context
-//   - tx pgx.Tx
-//   - lyrics []dao.Lyric
-func (_e *MockTracksRepository_Expecter) UpdateLyric(ctx interface{}, tx interface{}, lyrics interface{}) *MockTracksRepository_UpdateLyric_Call {
-	return &MockTracksRepository_UpdateLyric_Call{Call: _e.mock.On("UpdateLyric", ctx, tx, lyrics)}
-}
-
-func (_c *MockTracksRepository_UpdateLyric_Call) Run(run func(ctx context.Context, tx pgx.Tx, lyrics []dao.Lyric)) *MockTracksRepository_UpdateLyric_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(pgx.Tx), args[2].([]dao.Lyric))
-	})
-	return _c
-}
-
-func (_c *MockTracksRepository_UpdateLyric_Call) Return(_a0 error) *MockTracksRepository_UpdateLyric_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *MockTracksRepository_UpdateLyric_Call) RunAndReturn(run func(context.Context, pgx.Tx, []dao.Lyric) error) *MockTracksRepository_UpdateLyric_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -617,8 +830,8 @@ func (_c *MockTracksRepository_UpdateTrack_Call) Run(run func(ctx context.Contex
 	return _c
 }
 
-func (_c *MockTracksRepository_UpdateTrack_Call) Return(_a0 error) *MockTracksRepository_UpdateTrack_Call {
-	_c.Call.Return(_a0)
+func (_c *MockTracksRepository_UpdateTrack_Call) Return(err error) *MockTracksRepository_UpdateTrack_Call {
+	_c.Call.Return(err)
 	return _c
 }
 

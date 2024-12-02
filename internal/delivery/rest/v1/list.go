@@ -23,6 +23,7 @@ type TracksListQuery struct {
 }
 
 type TracksResponse struct {
+	TrackID  int       `json:"trackID"`
 	Artist   string    `json:"artist"`
 	Track    string    `json:"track"`
 	Lyric    []string  `json:"lyric"`
@@ -40,7 +41,7 @@ type TracksResponse struct {
 // @Param				 offset query string false "Offset result."
 // @Param				 artist query string false "Name of the artist or group."
 // @Param				 track query string false "Title of track."
-// @Param				 releasedyaer query string false "List of tracks."
+// @Param				 releasedyear query string false "List of tracks."
 // @Param				 link query string false "Exact link"
 // @Success      200  {array}  v1.TracksResponse "Success response"
 // @Failure      400  {object}  v1.HTTPError "Bad request"
@@ -50,12 +51,12 @@ func (h *TracksHandlers) List(c echo.Context) (err error) {
 	var queryparam TracksListQuery
 
 	if err = c.Bind(&queryparam); err != nil {
-		c.Logger().Errorf("failed to List.Bind: %s", err.Error())
+		h.logger.Err(err).Msg("failed to c.Bind")
 		return c.JSON(http.StatusBadRequest, HTTPError{Message: err.Error()})
 	}
 
 	if err = c.Validate(queryparam); err != nil {
-		c.Logger().Errorf("failed to List.Validate: %s", err.Error())
+		h.logger.Err(err).Msg("failed to c.Validate")
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
@@ -68,13 +69,14 @@ func (h *TracksHandlers) List(c echo.Context) (err error) {
 		ReleasedYear: queryparam.ReleasedYear,
 		Link:         queryparam.Link,
 	}); err != nil {
-		c.Logger().Errorf("failed to trackService.GetList: %s", err.Error())
+		h.logger.Err(err).Msg("failed to trackService.GetList")
 		return c.JSON(http.StatusInternalServerError, HTTPError{Message: "something went wrong"})
 	}
 
 	res := []TracksResponse{}
 	for _, track := range tracks {
 		res = append(res, TracksResponse{
+			TrackID:  track.ID,
 			Artist:   track.Artist,
 			Track:    track.Track,
 			Lyric:    track.Lyric,

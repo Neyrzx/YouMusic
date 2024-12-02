@@ -27,7 +27,7 @@ func TestInfo(t *testing.T) {
 	tests := []struct {
 		name            string
 		trackInfoDTO    entities.TrackInfo
-		gatewayConfig   config.MusicInfoGateway
+		gatewayConfig   config.GatewayHTTPClient
 		gatewayResponse io.ReadCloser
 		gatewayError    error
 		expectedResult  entities.TrackInfoResult
@@ -39,7 +39,7 @@ func TestInfo(t *testing.T) {
 				Song:  "title",
 				Group: "group",
 			},
-			gatewayConfig: config.MusicInfoGateway{},
+			gatewayConfig: config.GatewayHTTPClient{},
 			gatewayResponse: newResponse(`
 			{
 				"releaseDate":"16.07.2006",
@@ -60,7 +60,7 @@ func TestInfo(t *testing.T) {
 				Song:  "title",
 				Group: "group",
 			},
-			gatewayConfig:   config.MusicInfoGateway{},
+			gatewayConfig:   config.GatewayHTTPClient{},
 			gatewayResponse: newResponse(``),
 			gatewayError:    errGatewayClientBadRequest,
 			expectedResult:  entities.TrackInfoResult{},
@@ -72,7 +72,7 @@ func TestInfo(t *testing.T) {
 				Song:  "title",
 				Group: "group",
 			},
-			gatewayConfig:   config.MusicInfoGateway{},
+			gatewayConfig:   config.GatewayHTTPClient{},
 			gatewayResponse: newResponse(``),
 			gatewayError:    errGatewayClientBadRequest,
 			expectedResult:  entities.TrackInfoResult{},
@@ -85,7 +85,7 @@ func TestInfo(t *testing.T) {
 			t.Parallel()
 
 			mockInfoGatewayCalls := mocks.NewMockClient(t)
-			mockInfoGatewayCalls.EXPECT().Get(mock.Anything).
+			mockInfoGatewayCalls.EXPECT().Get(mock.Anything, mock.Anything).
 				Return(test.gatewayResponse, test.gatewayError).
 				Once()
 

@@ -5,6 +5,13 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/neyrzx/youmusic/internal/domain/entities"
+	"github.com/neyrzx/youmusic/pkg/logger"
+	"github.com/rs/zerolog"
+)
+
+const (
+	packageKey  = "handlers"
+	packageName = "tracks"
 )
 
 type TracksService interface {
@@ -18,16 +25,24 @@ type TracksService interface {
 
 type TracksHandlers struct {
 	trackService TracksService
+	logger       *zerolog.Logger
 }
 
 func NewTracksHandlers(g *echo.Group, ts TracksService) *TracksHandlers {
-	h := &TracksHandlers{trackService: ts}
+	logger := logger.DefaultLogger().With().Str(packageKey, packageName).Logger()
+
+	h := &TracksHandlers{
+		trackService: ts,
+		logger:       &logger,
+	}
+
 	g.POST("/", h.Create)
 	g.GET("/", h.List)
 	g.GET("/:id/", h.Retrieve)
 	g.PATCH("/:id/", h.Update)
 	g.DELETE("/:id/", h.Delete)
 	g.GET("/:id/lyric/", h.LyricRetrieve)
+
 	return h
 }
 

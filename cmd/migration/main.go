@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os/signal"
 	"syscall"
 
 	"github.com/joho/godotenv"
 	"github.com/neyrzx/youmusic/internal/config"
+	"github.com/neyrzx/youmusic/pkg/logger"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -21,17 +21,17 @@ func main() {
 	ctx, done := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer done()
 
+	l := logger.DefaultLogger().With().Str("app", "migrations").Logger()
+
 	if err := godotenv.Load(); err != nil {
-		log.Printf("failed godotenv.Load(): %s", err)
-		return
+		l.Fatal().Err(err).Msg("failed to godotenv.Load")
 	}
 
 	if err := migrationUp(ctx); err != nil {
-		log.Printf("failed migrate: %s\n", err)
-		return
+		l.Fatal().Err(err).Msg("failed to migrationUp")
 	}
 
-	log.Println("migrate done successful")
+	l.Info().Msg("migrate done successful")
 }
 
 func migrationUp(ctx context.Context) error {

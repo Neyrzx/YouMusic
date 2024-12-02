@@ -64,7 +64,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "List of tracks.",
-                        "name": "releasedyaer",
+                        "name": "releasedyear",
                         "in": "query"
                     },
                     {
@@ -122,7 +122,7 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Success created",
                         "schema": {
                             "type": "string"
@@ -370,13 +370,18 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "link": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "uri",
+                    "example": "https://y.be/asd2d2cW"
                 },
                 "lyric": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "verse #1\n\nverse #2\n\nverse #3"
                 },
                 "released": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date",
+                    "example": "10.10.2010"
                 },
                 "track": {
                     "type": "string"
@@ -420,6 +425,9 @@ const docTemplate = `{
                 },
                 "track": {
                     "type": "string"
+                },
+                "trackID": {
+                    "type": "integer"
                 }
             }
         },

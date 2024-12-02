@@ -1,3 +1,5 @@
 bin/*
+mocks/*
 tests/*
 coverage.out
+.env

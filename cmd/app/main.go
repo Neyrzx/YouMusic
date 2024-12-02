@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -12,14 +11,15 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	_ "github.com/neyrzx/youmusic/docs"
 	"github.com/neyrzx/youmusic/internal/config"
 	"github.com/neyrzx/youmusic/internal/delivery/rest"
 	"github.com/neyrzx/youmusic/internal/domain/repositories"
 	"github.com/neyrzx/youmusic/internal/domain/services"
 	"github.com/neyrzx/youmusic/internal/gateways"
 	"github.com/neyrzx/youmusic/pkg/httpclient"
+	"github.com/neyrzx/youmusic/pkg/logger"
 	"github.com/neyrzx/youmusic/pkg/validator"
-	"github.com/rs/zerolog"
 	"github.com/sethvargo/go-envconfig"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
@@ -29,12 +29,11 @@ func main() {
 
 	mode := config.GetCurrentRunningMode()
 
-	l := zerolog.New(os.Stdout)
+	l := logger.DefaultLogger()
 	l.With().Str("mode", string(mode))
 
 	if mode == config.ModeLocal {
 		if err := godotenv.Load(); err != nil {
-			// l.Error(, slog.String("msg", err.Error()))
 			l.Error().Err(err).Msg("failed to godotenv.Load")
 		}
 	}
@@ -45,8 +44,14 @@ func main() {
 	}
 
 	e := echo.New()
-	e.Validator = validator.NewValidator()
 
+	valid, err := validator.NewValidator()
+	if err != nil {
+		l.Error().Err(err).Msg("failed to validator.NewValidator")
+	}
+	e.Validator = valid
+
+	// Middlewares
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:      true,
 		LogStatus:   true,
@@ -65,18 +70,23 @@ func main() {
 		},
 	}))
 	e.Use(middleware.Recover())
+	e.Use(middleware.AddTrailingSlashWithConfig(middleware.TrailingSlashConfig{
+		RedirectCode: http.StatusMovedPermanently,
+	}))
 	e.Use(middleware.CORS())
 
+	// Dependencies
 	db, err := pgxpool.New(ctx, cfg.Database.ConnectionURI())
 	if err != nil {
 		l.Error().Err(err).Msg("failed to pgxpool.New")
 	}
 
-	client := httpclient.NewHTTPClient()
+	client := httpclient.NewHTTPClient(cfg.GatewayMusicInfo)
 	tracksRepository := repositories.NewTracksRepository(db)
-	musicInfoGateway := gateways.NewMusicInfoGateway(client, cfg.MusicInfo)
+	musicInfoGateway := gateways.NewMusicInfoGateway(client, cfg.GatewayMusicInfo)
 	tracksService := services.NewTracksService(tracksRepository, musicInfoGateway)
 
+	// Routes
 	rest.InitAPI(e, tracksService)
 	e.GET(cfg.SwaggerDocPath, echoSwagger.WrapHandler)
 
@@ -96,4 +106,6 @@ func main() {
 	if err = e.Shutdown(ctx); err != nil {
 		l.Error().Err(err).Msg("failed to e.Shutdown")
 	}
+
+	l.Info().Msg("server successfuly shutdown")
 }

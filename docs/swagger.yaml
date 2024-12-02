@@ -17,10 +17,20 @@ definitions:
       artist:
         type: string
       link:
+        example: https://y.be/asd2d2cW
+        format: uri
         type: string
       lyric:
+        example: |-
+          verse #1
+
+          verse #2
+
+          verse #3
         type: string
       released:
+        example: 10.10.2010
+        format: date
         type: string
       track:
         type: string
@@ -51,6 +61,8 @@ definitions:
         type: string
       track:
         type: string
+      trackID:
+        type: integer
     type: object
   v1.TracksRetrieveResponse:
     properties:
@@ -104,7 +116,7 @@ paths:
         type: string
       - description: List of tracks.
         in: query
-        name: releasedyaer
+        name: releasedyear
         type: string
       - description: Exact link
         in: query
@@ -144,7 +156,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "201":
           description: Success created
           schema:
             type: string

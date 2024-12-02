@@ -15,15 +15,15 @@ import (
 const timeoutInfo = 15 * time.Second
 
 type Client interface {
-	Get(string) (io.ReadCloser, error)
+	Get(context.Context, string) (io.ReadCloser, error)
 }
 
 type MusicInfoGateway struct {
 	client Client
-	cfg    config.MusicInfoGateway
+	cfg    config.GatewayHTTPClient
 }
 
-func NewMusicInfoGateway(client Client, cfg config.MusicInfoGateway) *MusicInfoGateway {
+func NewMusicInfoGateway(client Client, cfg config.GatewayHTTPClient) *MusicInfoGateway {
 	return &MusicInfoGateway{client: client, cfg: cfg}
 }
 
@@ -37,8 +37,8 @@ func (gw *MusicInfoGateway) Info(ctx context.Context, track entities.TrackInfo) 
 	_, cancelFunc := context.WithTimeout(ctx, timeoutInfo)
 	defer cancelFunc()
 
-	path := fmt.Sprintf("%s%s?song=%s&group=%s", gw.cfg.URL, gw.cfg.Route, track.Song, track.Group)
-	data, err := gw.client.Get(path)
+	path := fmt.Sprintf("%s/info/?song=%s&group=%s", gw.cfg.BaseURL, track.Song, track.Group)
+	data, err := gw.client.Get(ctx, path)
 	if err != nil {
 		return entities.TrackInfoResult{}, fmt.Errorf("failed to client.Get(%s): %w", path, err)
 	}

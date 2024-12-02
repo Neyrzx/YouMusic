@@ -25,17 +25,17 @@ func (h *TracksHandlers) Delete(c echo.Context) (err error) {
 	var request TrackDeletePrarams
 
 	if err = c.Bind(&request); err != nil {
-		c.Logger().Errorf("failed to Bind: %s", err.Error())
+		h.logger.Err(err).Msg("failed to c.Bind")
 		return c.JSON(http.StatusBadRequest, HTTPError{Message: "request body malformed"})
 	}
 
 	if err = c.Validate(request); err != nil {
-		c.Logger().Errorf("failed to Validate: %s", err.Error())
+		h.logger.Err(err).Msg("failed to c.Validate")
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
 	if err = h.trackService.Delete(c.Request().Context(), request.ID); err != nil {
-		c.Logger().Errorf("failed to trackService.Update: %s", err.Error())
+		h.logger.Err(err).Msg("failed to trackService.Update")
 		return c.JSON(http.StatusInternalServerError, HTTPError{Message: "something went wrong"})
 	}
 

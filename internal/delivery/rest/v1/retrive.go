@@ -37,10 +37,12 @@ func (h *TracksHandlers) Retrieve(c echo.Context) (err error) {
 	var pathParam TracksRetrievePathParam
 
 	if err = c.Bind(&pathParam); err != nil {
-		return c.JSON(http.StatusBadRequest, HTTPError{Message: "id param is required"})
+		h.logger.Err(err).Msg("failed to c.Bind")
+		return c.JSON(http.StatusBadRequest, HTTPError{Message: "id param is invalid"})
 	}
 
 	if err = c.Validate(pathParam); err != nil {
+		h.logger.Err(err).Msg("failed to c.Validate")
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
@@ -49,7 +51,7 @@ func (h *TracksHandlers) Retrieve(c echo.Context) (err error) {
 		if errors.Is(err, domain.ErrTrackNotFound) {
 			return c.JSON(http.StatusNotFound, err)
 		}
-		c.Logger().Errorf("failed to Get(%d): %s", pathParam.ID, err.Error())
+		h.logger.Err(err).Int("trackID", pathParam.ID).Msg("failed to c.Validate")
 		return c.JSON(http.StatusInternalServerError, HTTPError{Message: "something went wrong"})
 	}
 

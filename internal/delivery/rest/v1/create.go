@@ -19,7 +19,7 @@ type TracksCreateRequest struct {
 // @Accept       json
 // @Produce			 json
 // @Param				 input body v1.TracksCreateRequest true "Create track by song and group names."
-// @Success      200  {string}  string "Success created"
+// @Success      201  {string}  string "Success created"
 // @Failure      400  {object}  v1.HTTPError "Bad request"
 // @Failure      500  {object}  v1.HTTPError "Internal server error"
 // @Router       /tracks/ [post]
@@ -27,12 +27,12 @@ func (h *TracksHandlers) Create(c echo.Context) (err error) {
 	var request TracksCreateRequest
 
 	if err = c.Bind(&request); err != nil {
-		c.Logger().Errorf("failed to Create.Bind: %s", err.Error())
+		h.logger.Err(err).Msg("failed to c.Bind")
 		return c.JSON(http.StatusBadRequest, HTTPError{Message: "request body malformed"})
 	}
 
 	if err = c.Validate(request); err != nil {
-		c.Logger().Errorf("failed to Create.c.Validate: %s", err.Error())
+		h.logger.Err(err).Msg("failed to c.Validate")
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
@@ -40,9 +40,9 @@ func (h *TracksHandlers) Create(c echo.Context) (err error) {
 		Title:  request.Song,
 		Artist: request.Group,
 	}); err != nil {
-		c.Logger().Errorf("failed to Create.ctl.tc.Create: %s", err.Error())
-		return c.JSON(http.StatusBadRequest, HTTPError{Message: err.Error()})
+		h.logger.Err(err).Msg("failed to trackService.Create")
+		return c.JSON(http.StatusInternalServerError, HTTPError{Message: "something went wrong, try again later"})
 	}
 
-	return c.NoContent(http.StatusCreated)
+	return c.JSON(http.StatusCreated, "OK")
 }

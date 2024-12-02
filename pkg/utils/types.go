@@ -29,3 +29,7 @@ func (t *ReleaseDate) UnmarshalJSON(data []byte) error {
 	*t = ReleaseDate(date)
 	return nil
 }
+
+func (t *ReleaseDate) String() string {
+	return time.Time(*t).String()
+}

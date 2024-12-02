@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	io "io"
 
 	mock "github.com/stretchr/testify/mock"
@@ -21,9 +23,9 @@ func (_m *MockClient) EXPECT() *MockClient_Expecter {
 	return &MockClient_Expecter{mock: &_m.Mock}
 }
 
-// Get provides a mock function with given fields: _a0
-func (_m *MockClient) Get(_a0 string) (io.ReadCloser, error) {
-	ret := _m.Called(_a0)
+// Get provides a mock function with given fields: _a0, _a1
+func (_m *MockClient) Get(_a0 context.Context, _a1 string) (io.ReadCloser, error) {
+	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
@@ -31,19 +33,19 @@ func (_m *MockClient) Get(_a0 string) (io.ReadCloser, error) {
 
 	var r0 io.ReadCloser
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (io.ReadCloser, error)); ok {
-		return rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (io.ReadCloser, error)); ok {
+		return rf(_a0, _a1)
 	}
-	if rf, ok := ret.Get(0).(func(string) io.ReadCloser); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, string) io.ReadCloser); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(io.ReadCloser)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -57,14 +59,15 @@ type MockClient_Get_Call struct {
 }
 
 // Get is a helper method to define mock.On call
-//   - _a0 string
-func (_e *MockClient_Expecter) Get(_a0 interface{}) *MockClient_Get_Call {
-	return &MockClient_Get_Call{Call: _e.mock.On("Get", _a0)}
+//   - _a0 context.Context
+//   - _a1 string
+func (_e *MockClient_Expecter) Get(_a0 interface{}, _a1 interface{}) *MockClient_Get_Call {
+	return &MockClient_Get_Call{Call: _e.mock.On("Get", _a0, _a1)}
 }
 
-func (_c *MockClient_Get_Call) Run(run func(_a0 string)) *MockClient_Get_Call {
+func (_c *MockClient_Get_Call) Run(run func(_a0 context.Context, _a1 string)) *MockClient_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -74,7 +77,7 @@ func (_c *MockClient_Get_Call) Return(_a0 io.ReadCloser, _a1 error) *MockClient_
 	return _c
 }
 
-func (_c *MockClient_Get_Call) RunAndReturn(run func(string) (io.ReadCloser, error)) *MockClient_Get_Call {
+func (_c *MockClient_Get_Call) RunAndReturn(run func(context.Context, string) (io.ReadCloser, error)) *MockClient_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
