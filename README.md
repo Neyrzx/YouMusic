@@ -12,7 +12,7 @@ cd YouMusic
 ```
 
 > [!IMPORTANT]
-> 2. Создайте .env файл и настройте под себя если необходимо:
+> 2. Создайте .env файл и настройте под себя если необходимо (`GATEWAY_MUSIC_INFO_BASE_URL`):
 > ```bash
 > cp .env.example .env
 > ```
