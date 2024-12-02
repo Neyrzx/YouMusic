@@ -70,9 +70,6 @@ func main() {
 		},
 	}))
 	e.Use(middleware.Recover())
-	e.Use(middleware.AddTrailingSlashWithConfig(middleware.TrailingSlashConfig{
-		RedirectCode: http.StatusMovedPermanently,
-	}))
 	e.Use(middleware.CORS())
 
 	// Dependencies

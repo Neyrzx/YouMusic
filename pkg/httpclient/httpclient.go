@@ -75,14 +75,14 @@ func (c *HTTPClient) get(ctx context.Context, url string) (body []byte, err erro
 		return nil, fmt.Errorf("failed to http.DefaultClient.Do: %w", err)
 	}
 
-	if slices.Contains(c.badStatusCodes, res.StatusCode) {
-		return nil, fmt.Errorf("failed with statusCode: %d", res.StatusCode)
-	}
-
 	defer res.Body.Close()
 
 	if body, err = io.ReadAll(res.Body); err != nil {
 		return nil, fmt.Errorf("failed to io.ReadAll(response body): %w", err)
+	}
+
+	if slices.Contains(c.badStatusCodes, res.StatusCode) {
+		return nil, fmt.Errorf("failed with statusCode: %d, %s", res.StatusCode, string(body))
 	}
 
 	return body, nil

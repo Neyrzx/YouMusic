@@ -182,7 +182,7 @@ func (s *TracksService) Update(ctx context.Context, updateData entities.TrackUpd
 			}
 		}
 
-		if updateData.Track != "" {
+		if updateData.Track != "" || !updateData.Released.IsZero() || updateData.Link != "" {
 			track = dao.Track{
 				TrackID:    updateData.TrackID,
 				ArtistID:   artist.ArtistID,
